@@ -1,0 +1,111 @@
+--[[-- INFO -------------------------------------------------------------------
+	File				: avo_debug_m
+	Description : Debug functions and callbacks for most game events
+	Credits		 	: aVo
+	Revision		: 0.4
+	Change Date : 07.26.2013
+--]]---------------------------------------------------------------------------
+--[[-- TODO -------------------------------------------------------------------
+	1. luacap debug functionality
+--]]---------------------------------------------------------------------------
+--/----------------------------------------------------------------------------
+--/ Variables
+--/----------------------------------------------------------------------------
+local empty = function(...) end --/ plug
+local sname = script_name()
+
+--/----------------------------------------------------------------------------
+--/ Module entry point.
+--/----------------------------------------------------------------------------
+function _init(ini)
+	_G.callstack = this.callstack
+	_G.abort = this.abort
+
+	--/ Logging
+	local printf_log = avo_utils.read_from_ini(ini,"logging","printf","bool",false)
+	local debug_log = avo_utils.read_from_ini(ini,"logging","debug","bool",false)
+	local warning_log = avo_utils.read_from_ini(ini,"logging","warning","bool",false)
+	local error_log = avo_utils.read_from_ini(ini,"logging","error","bool",false)
+	local visual_log = avo_utils.read_from_ini(ini,"logging","visual","bool",false)
+	if debug_log then _G.dlog = avo_log.dlog else _G.dlog = empty end
+	if warning_log then _G.wlog = avo_log.wlog else _G.wlog = empty end
+	if error_log then _G.elog = avo_log.elog else _G.elog = empty end
+	if visual_log then _G.vlog = avo_log.vlog else _G.vlog = empty end
+	if printf_log then _G.printf = avo_log.printf else _G.printf = empty end
+	
+	--/ Debug
+	local dev_debug = avo_utils.read_from_ini(ini,"debug","dev_debug","bool",false)
+	local sim_debug = avo_utils.read_from_ini(ini,"debug","sim_debug","bool",false)
+	if dev_debug then _G.dev_debug = true end
+	if sim_debug then _G.sim_debug = true end
+	
+	--/ Callbacks
+	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
+end
+
+--/----------------------------------------------------------------------------
+--/ Build call stack trace 
+--/----------------------------------------------------------------------------
+function callstack()
+	local	t = {}
+	if debug then
+		t = avo_string.split(debug.traceback(), '\n', true)
+		for k,v in pairs(t) do
+			if string.match(v, "stack traceback") then 
+				next(t)
+			else
+				t[k] = string.format("[%d] %s", k-1, string.gsub(string.gsub(v, ".+\\", ""), ">", ""))
+			end
+		end
+	end
+	return t
+end
+
+--/----------------------------------------------------------------------------
+--/ Abort game and log error details
+--/----------------------------------------------------------------------------
+function abort(msg, ...)
+	avo_log.log("[ABORT] "..avo_log.dbg_format(msg, ...))
+	avo_log.log(table.concat(callstack(), '\n'))
+  avo_log.flush()
+  local fail = avo_abort_game/0
+end
+
+--/----------------------------------------------------------------------------
+--/ Callback subscribers
+--/----------------------------------------------------------------------------
+function init_slots()
+	--/ avo_controller
+  slot("avo_game_start", on_avo_game_start)
+	--/ bind_stalker
+  slot("actor_binder_init", on_actor_binder_init)
+  slot("actor_net_spawn", on_actor_net_spawn)
+  slot("actor_net_destroy", on_actor_net_destroy)
+  slot("actor_reinit", on_actor_reinit)
+  slot("actor_update", on_actor_update)
+  slot("info_callback", on_info_callback)
+end
+--/----------------------------------------------------------------------------
+function on_avo_game_start()
+  dlog("avo game started")
+  dlog("ini: %s", avo_controller.ini_by_name(script_name()))
+	-- print_table(sm:dump())
+end
+
+function on_actor_binder_init()
+end
+
+function on_actor_net_spawn()
+end
+
+function on_actor_net_destroy()
+end
+
+function on_actor_reinit()
+end
+
+function on_actor_update()
+end
+
+function on_info_callback(info_id)
+end

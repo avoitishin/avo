@@ -1,0 +1,34 @@
+--[[-- INFO -------------------------------------------------------------------
+	File				: avo_luacap.script
+	Description	: Luacap initialization and cleanup
+	Credits			: aVo
+	Revision		: 0.2
+	Change Date	: 12.05.2012
+--]] --------------------------------------------------------------------------
+local use_luacap = false --/ luacap is disabled by default
+--/----------------------------------------------------------------------------
+--/ Initialize module
+--/----------------------------------------------------------------------------
+function init()
+  if type(LuaCleanup) == "function" then
+    actor_net_destroy = slot("actor_net_destroy", on_actor_net_destroy)
+    sm:subscribe(actor_net_destroy)
+		use_luacap = true --/ enable luacap
+  else
+    log("[WARN] Luacap is NOT available !!!")
+  end
+	translate_to_global()
+end
+--/----------------------------------------------------------------------------
+--/ Tranlsate to global
+--/----------------------------------------------------------------------------
+function translate_to_global()
+	_G.use_luacap = use_luacap
+end
+--/----------------------------------------------------------------------------
+--/ Cleanup on destroy
+--/----------------------------------------------------------------------------
+function on_actor_net_destroy()
+	_G.lsc_threads = {}
+	LuaCleanup()
+end

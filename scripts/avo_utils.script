@@ -1,0 +1,49 @@
+--[[-- INFO -------------------------------------------------------------------
+	File				: avo_utils
+	Description	: Various game utilities
+	Credits			: aVo, Alundaio
+	Revision		: 0.1
+	Change Date	: 07.25.2013
+--]] --------------------------------------------------------------------------
+
+--/----------------------------------------------------------------------------
+--/ Read from ini file
+--/----------------------------------------------------------------------------
+function read_from_ini(ini,section,line,var_type,default)
+	if not (ini) then
+		ini = system_ini()
+	end
+
+	if (section and line and ini:section_exist(section) and ini:line_exist(section,line)) then
+		if (var_type == "bool") then
+			return ini:r_bool(section,line)
+		elseif (var_type == "string") then
+			return ini:r_string(section,line)
+		elseif (var_type == "float") then
+			return ini:r_float(section,line)
+		else
+			return ini:r_string_wq(section,line)
+		end
+	else
+		return default
+	end
+end
+
+--/----------------------------------------------------------------------------
+--/ Parse ini section to table: [key] = value
+--/----------------------------------------------------------------------------
+function parse_ini_section_to_array(ini,section)
+	local tmp = nil
+	local trim = avo_string.trim
+	if ini and ini:section_exist(section) then
+		tmp = {}
+		local result, id, value = nil, nil, nil
+		for a = 0, ini:line_count(section) - 1 do
+			result, id, value = ini:r_line(section,a,"","")
+			if id ~= nil and trim(id) ~= "" and trim(id) ~= nil then
+				tmp[trim(id)] = trim(value)
+			end
+		end
+	end
+	return tmp
+end

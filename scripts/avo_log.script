@@ -1,0 +1,76 @@
+--[[-- INFO -------------------------------------------------------------------
+	File				: avo_log
+	Description	: Logging functions
+	Credits			: aVo
+	Revision		: 0.2
+	Change Date	: 07.26.2013 (-init)
+--]] --------------------------------------------------------------------------
+
+--/----------------------------------------------------------------------------
+--/ xray extensions replacement for non-functional log
+--/----------------------------------------------------------------------------
+function log(msg, ...)
+  if log1 then log1(msg, ...) end
+end
+--/----------------------------------------------------------------------------
+--/ xray extensions replacement for non-functional flush
+--/----------------------------------------------------------------------------
+function flush()
+  if flush1 then flush1() end
+end
+--/----------------------------------------------------------------------------
+--/ Add debug information (script name, current line) if available
+--/----------------------------------------------------------------------------
+function dbg_format(...)
+	local arg = {...}
+	local stack_depth = 3 --/ default stack depth
+	if type(arg[1]) == 'number' then --/ stack depth override
+		stack_depth = table.remove(arg, 1) --/ shift first value
+	end
+	if debug == nil then return string.format(unpack(arg)) end --/ debug not available
+	local info_table = debug.getinfo(stack_depth)
+	if not info_table then return string.format(unpack(arg)) end
+	local script = avo_string.get_filename(info_table.short_src)
+	return string.format("(%s:%d) %s", script, info_table.currentline, string.format(unpack(arg)))
+end
+--/----------------------------------------------------------------------------
+--/ Error log
+--/----------------------------------------------------------------------------
+function elog(...)
+  log(string.format("[ERROR] %s", dbg_format(...))) 
+end
+--/----------------------------------------------------------------------------
+--/ Debug (info) log
+--/----------------------------------------------------------------------------
+function dlog(...)
+	log(string.format("[DEBUG] %s", dbg_format(...)))
+end
+--/----------------------------------------------------------------------------
+--/ Warning log
+--/----------------------------------------------------------------------------
+function wlog(...)
+	log(string.format("[WARN] %s", dbg_format(...)))
+end
+--/----------------------------------------------------------------------------
+--/ printf (XRay) log
+--/----------------------------------------------------------------------------
+function printf(...)
+	log(string.format("[XRAY] %s", dbg_format(...)))
+end
+--/----------------------------------------------------------------------------
+--/ Visual log (show in-game message)
+--/----------------------------------------------------------------------------
+local bufferedmessages = {}
+function vlog(...)
+	local msg = dbg_format(...)
+	log(string.format("[VLOG] %s", msg)) --/ save to log as well
+	if msg then
+		table.insert(bufferedmessages, msg)
+	end
+	if db and db.actor and #bufferedmessages > 0 then
+		for _, msg in ipairs(bufferedmessages) do
+			db.actor:give_game_news("VLOG", msg, "ui_inGame2_PD_Lider", 0, 15000)
+		end
+		bufferedmessages={}
+	end
+end
