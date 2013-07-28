@@ -92,6 +92,8 @@ function actor_binder:net_destroy()
 	self.object:set_callback(callback.level_border_exit, nil)
 	self.object:set_callback(callback.take_item_from_box, nil)
 	self.object:set_callback(callback.use_object, nil)
+	
+	self.object:set_callback(callback.hit, nil)
 
 	log("--------->"..tostring(_G.amb_vol))
 	log("--------->"..tostring(_G.mus_vol))
@@ -127,10 +129,15 @@ function actor_binder:reinit()
 	self.object:set_callback(callback.take_item_from_box, self.take_item_from_box, self)
 	self.object:set_callback(callback.use_object, self.use_inventory_item, self)
 	
+	self.object:set_callback(callback.hit, self.hit_callback, self)
 	sm:call("actor_reinit")
 	
 end
 ----------------------------------------------------------------------------------------------------------------------
+function actor_binder:hit_callback(obj, amount, local_direction, who, bone_index)
+	sm:call("actor_hit_callback", obj, amount, local_direction, who, bone_index)
+end
+--------------------------------------------------------------------------------------------------------
 function actor_binder:take_item_from_box(box, item)
 	local box_name = box:name()
 	
