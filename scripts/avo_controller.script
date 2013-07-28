@@ -2,8 +2,8 @@
 	File				: avo_controller.script
 	Description	: Module orchestration script
 	Credits			: aVo, Alundaio
-	Revision		: 0.2
-	Change Date	: 07.26.2013
+	Revision		: 0.3
+	Change Date	: 07.28.2013 (+dump,+gsub_path)
 --]] --------------------------------------------------------------------------
 
 --/----------------------------------------------------------------------------
@@ -14,10 +14,10 @@ local sname = script_name() --/ script name
 local fs = getFS() --/ get file manager object
 
 local modules_root = "$avo_modules$" --/ location of module configs. This is set in fsgame.ltx
-local modules_path = string.gsub(fs:update_path(modules_root, ""), fs:update_path("$game_config$", ""), "") --/ location of module configs for ini_file initialization
+local modules_path = nil --/ location of module configs for ini_file initialization
 local modules_mask = "avo_*_m.ltx" --/ only files maching this pattern will be loaded
 local module_section = "module" --/ this section is required for each module
-local modules_populated = false --/ flag
+local modules_populated = false --/ are modules initialized flag
 local modules = {} --/ all modules (enabled and disabled) are stored here
 
 local schemes = {} --/ logic schemes
@@ -28,7 +28,9 @@ local schemes = {} --/ logic schemes
 function _init()
 	_G.ASSERT = ASSERT
   init_signals() --/ initialize signals manager
+	modules_path = gsub_path() --/ get path for ini_file
 	init_modules() --/ initialize modules
+	-- dump_modules()
   sm:call("avo_game_start") --/ fired game started signal
 end
 
@@ -108,6 +110,36 @@ end
 function ini_by_name(name)
 	if modules[name] then return modules[name].cfg end
 end
+
+--/----------------------------------------------------------------------------
+--/ Print out modules table
+--/----------------------------------------------------------------------------
+function dump_modules()
+	avo_log.dlog("---------- START aVo MODULES -----------")
+	local cnt = 1
+	for k,v in pairs(modules) do
+		avo_log.dlog("(%d) %s | %s | %s", cnt, tostring(k), tostring(v.enabled), v.cfg)
+		cnt = cnt + 1
+	end
+	avo_log.dlog("---------- END aVo MODULES -------------")
+end
+
+--/----------------------------------------------------------------------------
+--/ string.gsub will not work properly with special characters in a string
+--/	workaround is to change all (,),- to @ and do gsub
+--/----------------------------------------------------------------------------
+function gsub_path()
+	local m_root = fs:update_path(modules_root, "")
+	local cfg_root = fs:update_path("$game_config$", "")
+	m_root = string.gsub(m_root,"%(","@")
+	m_root = string.gsub(m_root,"%)","@")
+	m_root = string.gsub(m_root,"%-","@")
+	cfg_root = string.gsub(cfg_root,"%(","@")
+	cfg_root = string.gsub(cfg_root,"%)","@")
+	cfg_root = string.gsub(cfg_root,"%-","@")
+	return string.gsub(m_root,cfg_root,"")
+end
+
 
 --/----------------------------------------------------------------------------
 --/ Cleanup
