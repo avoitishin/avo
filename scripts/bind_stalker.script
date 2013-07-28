@@ -30,6 +30,8 @@ function actor_binder:__init (obj) super(obj)
 	self.loaded_slot_applied = false
 	self.last_detective_achievement_spawn_time 	= nil
 	self.last_mutant_hunter_achievement_spawn_time	= nil
+	
+	sm:call("actor_init", self)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:net_spawn(data)
@@ -57,11 +59,17 @@ function actor_binder:net_spawn(data)
 	self.spawn_frame = device().frame
 	self.already_jumped = false
 	self.loaded = false
+	
+	sm:call("actor_net_spawn", data)	
+	
 	benchmark.main()							          --' Distemper 06.2008 --
 	return true
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:net_destroy()
+
+	sm:call("actor_net_destroy")
+
 	xr_sound.stop_sounds_by_id(self.object:id())
 	local board_factions = sim_board.get_sim_board().players
 	if(board_factions) then
@@ -118,10 +126,16 @@ function actor_binder:reinit()
 	self.object:set_callback(callback.task_state, self.task_callback, self)
 	self.object:set_callback(callback.take_item_from_box, self.take_item_from_box, self)
 	self.object:set_callback(callback.use_object, self.use_inventory_item, self)
+	
+	sm:call("actor_reinit")
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:take_item_from_box(box, item)
 	local box_name = box:name()
+	
+	sm:call("actor_take_item_from_box", box, item)
+	
 end
 
 ----------------------------------------------------------------------------------------------------------------------
@@ -129,6 +143,9 @@ function actor_binder:info_callback(npc, info_id)
 	printf("*INFO*: npc='%s' id='%s'", npc:name(), info_id)
 	--' Сюжет
 	-- Отметки на карте
+	
+	sm:call("actor_info_callback", npc, info_id)
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:on_trade (item, sell_bye, money)
@@ -137,9 +154,15 @@ function actor_binder:on_trade (item, sell_bye, money)
 	else
 		 game_stats.money_trade_update (-money)
 	end
+	
+	sm:call("actor_on_trade", item, sell_bye, money)
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:article_callback(npc, group, name)
+
+	sm:call("actor_article_callback", npc, group, name)
+
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:on_item_take (obj)
@@ -164,9 +187,15 @@ function actor_binder:on_item_take (obj)
 ]]
 	end
 	treasure_manager.get_treasure_manager():on_item_take(obj:id())
+	
+	sm:call("actor_on_item_take", obj)
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:on_item_drop (obj)
+
+	sm:call("actor_on_item_drop", obj)
+
 end
 
 function actor_binder:use_inventory_item(obj)
@@ -183,6 +212,9 @@ function actor_binder:use_inventory_item(obj)
 			get_console():execute("snd_volume_eff 0")
 		end
 	end
+	
+	sm:call("actor_use_inventory_item", obj)
+	
 end
 
 function anabiotic_callback()
@@ -202,6 +234,9 @@ function anabiotic_callback()
 	level.change_game_time(0,0,rnd)
 	level_weathers.get_weather_manager():forced_weather_change()
 	printf("anabiotic_callback: time forwarded on [%d]", rnd)
+	
+	sm:call("actor_anabiotic_callback")
+	
 end
 
 function anabiotic_callback2()
@@ -211,6 +246,9 @@ function anabiotic_callback2()
 	_G.amb_vol = 0
 	_G.mus_vol = 0
 	disable_info("anabiotic_in_process")
+	
+	sm:call("actor_anabiotic_callback2")
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 
@@ -223,6 +261,9 @@ function actor_binder:task_callback(_task, _state)
 		end
 	end
 	task_manager.task_callback(_task, _state)
+	
+	sm:call("actor_task_callback", _task, _state)
+	
 end
 
 ----------------------------------------------------------------------------------------------------------------------
@@ -364,6 +405,9 @@ function actor_binder:update(delta)
 		primary_objects_filled = true
 	end
 	pda.fill_sleep_zones()
+	
+	sm:call("actor_update", delta)
+	
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:save(packet)
@@ -430,6 +474,9 @@ function actor_binder:save(packet)
 		packet:w_bool(true)
 		utils.w_CTime(packet, self.last_mutant_hunter_achievement_spawn_time)
 	end
+	
+	sm:call("actor_save", packet)
+	
 	set_save_marker(packet, "save", true, "actor_binder")
 end
 ----------------------------------------------------------------------------------------------------------------------
@@ -486,6 +533,9 @@ function actor_binder:load(reader)
 	if stored_achievement_time == true then
 		self.last_mutant_hunter_achievement_spawn_time = utils.r_CTime(reader)
 	end
+	
+	sm:call("actor_load", reader)
+	
 	set_save_marker(reader, "load", true, "actor_binder")
 end
 
