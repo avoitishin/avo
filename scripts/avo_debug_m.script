@@ -98,7 +98,11 @@ function init_slots()
 	slot("actor_task_callback", on_actor_task_callback)
 	
 	slot("actor_hit_callback", on_actor_hit_callback)
+	slot("actor_on_key", on_actor_on_key)
 end
+
+--/----------------------------------------------------------------------------
+--/ Callbacks
 --/----------------------------------------------------------------------------
 function on_avo_game_start()
   dlog("AVO GAME STARTED")
@@ -174,4 +178,13 @@ end
 
 function on_actor_hit_callback(obj, amount, local_direction, who, bone_index)
 	dlog("actor_binder.hit_callback(obj, amount, local_direction, who, bone_index) called")
+end
+
+local prev_key = nil
+function on_actor_on_key(key)
+	local bind = dik_to_bind(key)
+	if bind == 14 and prev_key == 6 then
+		dlog("ALT-F6 pressed")
+	end
+	prev_key = bind
 end
