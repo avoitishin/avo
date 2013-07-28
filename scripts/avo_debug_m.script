@@ -21,6 +21,9 @@ local keybind_shift_key = DIK_keys.DIK_RCONTROL
 local keybind_toggle_top_hud = DIK_keys.DIK_HOME
 local keybind_toggle_left_hud = DIK_keys.DIK_DELETE
 local keybind_toggle_right_hud = DIK_keys.DIK_END
+local debug_hud_top = nil
+local debug_hud_left = nil
+local debug_hud_right = nil
 
 --/----------------------------------------------------------------------------
 --/ Module entry point.
@@ -55,9 +58,6 @@ function _init(ini)
 	keybind_toggle_top_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
 	keybind_toggle_left_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
 	keybind_toggle_right_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_right_hud","string","END")]
-	
-	dlog("shift key: %d", keybind_shift_key)
-	dlog("top hud key: %d", keybind_toggle_top_hud)
 	
 	--/ Callbacks
 	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
@@ -134,6 +134,17 @@ end
 
 function on_actor_net_spawn(data)
 	dlog("actor_binder.net_spawn(data) called")
+	
+	--/ Setup debug huds
+	debug_hud_top = hud_tool("debug_hud_top")
+	debug_hud_left = hud_tool("debug_hud_left")
+	debug_hud_right = hud_tool("debug_hud_right")
+	
+	debug_hud_top:set_header("-[Pos. Info]-")
+	debug_hud_top:add_msg("TEST")
+	debug_hud_top:add_msg("More test bkah blah")
+	debug_hud_top:add_msg("More test bkah blah", 777)
+	debug_hud_top:display()
 end
 
 function on_actor_net_destroy()
@@ -210,4 +221,41 @@ function on_actor_on_key(key)
 		vlog("RIGHT hud toggled")
 	end
 	prev_key = key
+end
+
+
+--/----------------------------------------------------------------------------
+--/ Class to create hud tools
+--/----------------------------------------------------------------------------
+class "hud_tool"
+function hud_tool:__init(custom_static)
+	local hud = get_hud()
+	self.hud = hud:GetCustomStatic(custom_static)
+	if not (self.hud) then
+		hud:AddCustomStatic(custom_static, true)
+		self.hud = hud:GetCustomStatic(custom_static)
+	end
+	self.header = ""
+	self.msg = ""
+end
+
+function hud_tool:add_msg(text,value)
+	self.msg = self.msg..avo_string.str_format(text..": %s\\n",value)
+end
+
+function hud_tool:set_header(header)
+	self.header = header
+end
+
+function hud_tool:display(disable)
+	if (self.hud) and not (disable) then
+		self.hud:wnd():TextControl():SetText(self.msg)
+		self.msg = self.header and self.header .."\\n" or ""
+	end
+end
+
+function hud_tool:clear()
+	if (self.hud) then
+		self.hud:wnd():TextControl():SetText("")
+	end
 end
