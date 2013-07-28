@@ -78,34 +78,94 @@ function init_slots()
 	--/ avo_controller
   slot("avo_game_start", on_avo_game_start)
 	--/ bind_stalker
-  slot("actor_binder_init", on_actor_binder_init)
+  slot("actor_init", on_actor_init)
   slot("actor_net_spawn", on_actor_net_spawn)
   slot("actor_net_destroy", on_actor_net_destroy)
   slot("actor_reinit", on_actor_reinit)
   slot("actor_update", on_actor_update)
-  slot("info_callback", on_info_callback)
+  slot("actor_save", on_actor_save)
+  slot("actor_load", on_actor_load)
+	
+	slot("actor_take_item_from_box", on_actor_take_item_from_box)
+	slot("actor_info_callback", on_actor_info_callback)
+	slot("actor_on_trade", on_actor_on_trade)
+	slot("actor_article_callback", on_actor_article_callback)
+	slot("actor_on_item_take", on_actor_on_item_take)
+	slot("actor_on_item_drop", on_actor_on_item_drop)
+	slot("actor_use_inventory_item", on_actor_use_inventory_item)
+	slot("actor_anabiotic_callback", on_actor_anabiotic_callback)
+	slot("actor_anabiotic_callback2", on_actor_anabiotic_callback2)
+	slot("actor_task_callback", on_actor_task_callback)
 end
 --/----------------------------------------------------------------------------
 function on_avo_game_start()
-  dlog("avo game started")
-  dlog("ini: %s", avo_controller.ini_by_name(script_name()))
-	-- print_table(sm:dump())
+  dlog("AVO GAME STARTED")
 end
 
-function on_actor_binder_init()
+function on_actor_init(actor_binder)
+	dlog("actor_binder.__init(obj) called")
 end
 
-function on_actor_net_spawn()
+function on_actor_net_spawn(data)
+	dlog("actor_binder.net_spawn(data) called")
 end
 
 function on_actor_net_destroy()
+	dlog("actor_binder.net_destroy() called")
 end
 
 function on_actor_reinit()
+	dlog("actor_binder.reinit() called")
 end
 
-function on_actor_update()
+function on_actor_update(delta)
+	-- dlog("actor_binder.update(delta) called")
 end
 
-function on_info_callback(info_id)
+function on_actor_save(packet)
+	dlog("actor_binder.save(packet) called")
+end
+
+function on_actor_load(reader)
+	dlog("actor_binder.load(reader) called")
+end
+
+function actor_take_item_from_box(box, item)
+	dlog("actor_binder.take_item_from_box(box, item) called")
+end
+
+function on_actor_info_callback(npc, info_id)
+	dlog("actor_binder.info_callback(npc, info_id) called")
+end
+
+function on_actor_on_trade(item, sell_bye, money)
+	dlog("actor_binder.on_trade(item, sell_bye, money) called")
+end
+
+function on_actor_article_callback(npc, group, name)
+	dlog("actor_binder.article_callback(npc, group, name) called")
+end
+
+function on_actor_on_item_take(obj)
+	dlog("actor_binder.on_item_take(obj) called")
+end
+
+function on_actor_on_item_drop(obj)
+	dlog("actor_binder.on_item_drop(obj) called")
+end
+
+function on_actor_use_inventory_item(obj)
+	dlog("actor_binder.use_inventory_item(obj) called")
+end
+
+function on_actor_anabiotic_callback()
+	dlog("actor_binder.anabiotic_callback() called")
+end
+
+function on_actor_anabiotic_callback2()
+	dlog("actor_binder.anabiotic_callback2() called")
+end
+
+function on_actor_task_callback(_task, _state)
+	dlog("actor_binder.task_callback(_task, _state) called")
 end
