@@ -14,6 +14,14 @@
 local empty = function(...) end --/ plug
 local sname = script_name()
 
+local top_enabled = false
+local left_enabled = false
+local right_enabled = false
+local keybind_shift_key = DIK_keys.DIK_RCONTROL
+local keybind_toggle_top_hud = DIK_keys.DIK_HOME
+local keybind_toggle_left_hud = DIK_keys.DIK_DELETE
+local keybind_toggle_right_hud = DIK_keys.DIK_END
+
 --/----------------------------------------------------------------------------
 --/ Module entry point.
 --/----------------------------------------------------------------------------
@@ -38,6 +46,18 @@ function _init(ini)
 	local sim_debug = avo_utils.read_from_ini(ini,"debug","sim_debug","bool",false)
 	if dev_debug then _G.dev_debug = true end
 	if sim_debug then _G.sim_debug = true end
+	
+	--/ Debug HUD
+	top_enabled = avo_utils.read_from_ini(ini,"debug_hud","top_enabled","bool",false)
+	left_enabled = avo_utils.read_from_ini(ini,"debug_hud","left_enabled","bool",false)
+	right_enabled = avo_utils.read_from_ini(ini,"debug_hud","right_enabled","bool",false)
+	keybind_shift_key = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_shift_key","string","RCONTROL")]
+	keybind_toggle_top_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
+	keybind_toggle_left_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
+	keybind_toggle_right_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_right_hud","string","END")]
+	
+	dlog("shift key: %d", keybind_shift_key)
+	dlog("top hud key: %d", keybind_toggle_top_hud)
 	
 	--/ Callbacks
 	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
@@ -182,9 +202,12 @@ end
 
 local prev_key = nil
 function on_actor_on_key(key)
-	local bind = dik_to_bind(key)
-	if bind == 14 and prev_key == 6 then
-		dlog("ALT-F6 pressed")
+	if key == keybind_toggle_top_hud and prev_key == keybind_shift_key then
+		vlog("TOP hud toggled")
+	elseif key == keybind_toggle_left_hud and prev_key == keybind_shift_key then
+		vlog("LEFT hud toggled")
+	elseif key == keybind_toggle_right_hud and prev_key == keybind_shift_key then
+		vlog("RIGHT hud toggled")
 	end
-	prev_key = bind
+	prev_key = key
 end
