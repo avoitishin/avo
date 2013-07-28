@@ -33,15 +33,27 @@ function split(str, delim, do_trim)
 	end
 	return t
 end
+
 --/----------------------------------------------------------------------------
 --/ Trim whitespace from both sides of the string
 --/----------------------------------------------------------------------------
 function trim(str)
 	return (string.gsub(str, "^%s*(.-)%s*$", "%1"))
 end
+
 --/----------------------------------------------------------------------------
 --/ Get filename (without extension) from path
 --/----------------------------------------------------------------------------
 function get_filename(path)
 	return tostring(string.match(trim(path), "^.*\\(.-)%.%a-$"))
+end
+
+--/----------------------------------------------------------------------------
+--/ Replace each place holder %s with tostring(p) of parameters ...
+--/----------------------------------------------------------------------------
+function str_format(text,...)
+	if not text then return end
+	local i = 0
+	local p = {...}
+	return string.gsub(text,"%%s",function(a) i = i + 1 return tostring(p[i]) end)
 end
