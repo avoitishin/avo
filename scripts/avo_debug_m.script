@@ -96,6 +96,8 @@ function init_slots()
 	slot("actor_anabiotic_callback", on_actor_anabiotic_callback)
 	slot("actor_anabiotic_callback2", on_actor_anabiotic_callback2)
 	slot("actor_task_callback", on_actor_task_callback)
+	
+	slot("actor_hit_callback", on_actor_hit_callback)
 end
 --/----------------------------------------------------------------------------
 function on_avo_game_start()
@@ -168,4 +170,8 @@ end
 
 function on_actor_task_callback(_task, _state)
 	dlog("actor_binder.task_callback(_task, _state) called")
+end
+
+function on_actor_hit_callback(obj, amount, local_direction, who, bone_index)
+	dlog("actor_binder.hit_callback(obj, amount, local_direction, who, bone_index) called")
 end
