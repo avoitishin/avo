@@ -27,6 +27,7 @@ local schemes = {} --/ logic schemes
 --/----------------------------------------------------------------------------
 function _init()
 	_G.ASSERT = ASSERT
+	_G.abort = this.abort
   init_signals() --/ initialize signals manager
 	modules_path = gsub_path() --/ get path for ini_file
 	init_modules() --/ initialize modules
@@ -158,6 +159,16 @@ function ASSERT(cond, msg)
   if not cond then
     abort(msg)
   end
+end
+
+--/----------------------------------------------------------------------------
+--/ Abort game and log error details
+--/----------------------------------------------------------------------------
+function abort(msg, ...)
+	avo_log.log("[ABORT] "..avo_log.dbg_format(msg, ...))
+	avo_log.log(table.concat(callstack(), '\n'))
+  avo_log.flush()
+  local fail = avo_abort_game/0
 end
 
 --[[-- TODO -------------------------------------------------------------------
