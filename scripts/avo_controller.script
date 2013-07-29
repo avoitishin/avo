@@ -33,6 +33,10 @@ function _init()
 	init_modules() --/ initialize modules
 	-- dump_modules()
   sm:call("avo_game_start") --/ fired game started signal
+	
+	--/ callback slots
+	slot("stalker_net_spawn", on_stalker_net_spawn)
+	slot("stalker_net_destroy", on_stalker_net_destroy)
 end
 
 --/----------------------------------------------------------------------------
@@ -113,34 +117,15 @@ function ini_by_name(name)
 end
 
 --/----------------------------------------------------------------------------
---/ Print out modules table
+--/ xr_motivator callbacks
 --/----------------------------------------------------------------------------
-function dump_modules()
-	avo_log.dlog("---------- START aVo MODULES -----------")
-	local cnt = 1
-	for k,v in pairs(modules) do
-		avo_log.dlog("(%d) %s | %s | %s", cnt, tostring(k), tostring(v.enabled), v.cfg)
-		cnt = cnt + 1
-	end
-	avo_log.dlog("---------- END aVo MODULES -------------")
+function on_stalker_net_spawn(motivator_binder, se_object)
+	avo_utils.add_stalker(motivator_binder.object)
 end
 
---/----------------------------------------------------------------------------
---/ string.gsub will not work properly with special characters in a string
---/	workaround is to change all (,),- to @ and do gsub
---/----------------------------------------------------------------------------
-function gsub_path()
-	local m_root = fs:update_path(modules_root, "")
-	local cfg_root = fs:update_path("$game_config$", "")
-	m_root = string.gsub(m_root,"%(","@")
-	m_root = string.gsub(m_root,"%)","@")
-	m_root = string.gsub(m_root,"%-","@")
-	cfg_root = string.gsub(cfg_root,"%(","@")
-	cfg_root = string.gsub(cfg_root,"%)","@")
-	cfg_root = string.gsub(cfg_root,"%-","@")
-	return string.gsub(m_root,cfg_root,"")
+function on_stalker_net_destroy(motivator_binder)
+	avo_utils.del_stalker(motivator_binder.object)
 end
-
 
 --/----------------------------------------------------------------------------
 --/ Cleanup
@@ -169,6 +154,35 @@ function abort(msg, ...)
 	avo_log.log(table.concat(callstack(), '\n'))
   avo_log.flush()
   local fail = avo_abort_game/0
+end
+
+--/----------------------------------------------------------------------------
+--/ string.gsub will not work properly with special characters in a string
+--/	workaround is to change all (,),- to @ and do gsub
+--/----------------------------------------------------------------------------
+function gsub_path()
+	local m_root = fs:update_path(modules_root, "")
+	local cfg_root = fs:update_path("$game_config$", "")
+	m_root = string.gsub(m_root,"%(","@")
+	m_root = string.gsub(m_root,"%)","@")
+	m_root = string.gsub(m_root,"%-","@")
+	cfg_root = string.gsub(cfg_root,"%(","@")
+	cfg_root = string.gsub(cfg_root,"%)","@")
+	cfg_root = string.gsub(cfg_root,"%-","@")
+	return string.gsub(m_root,cfg_root,"")
+end
+
+--/----------------------------------------------------------------------------
+--/ Print out modules table
+--/----------------------------------------------------------------------------
+function dump_modules()
+	avo_log.dlog("---------- START aVo MODULES -----------")
+	local cnt = 1
+	for k,v in pairs(modules) do
+		avo_log.dlog("(%d) %s | %s | %s", cnt, tostring(k), tostring(v.enabled), v.cfg)
+		cnt = cnt + 1
+	end
+	avo_log.dlog("---------- END aVo MODULES -------------")
 end
 
 --[[-- TODO -------------------------------------------------------------------
