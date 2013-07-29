@@ -2,7 +2,7 @@
 enabled = true
 
 [logging]
-visual 	= false		; display and log hud messages (vlog)
+visual 	= true		; display and log hud messages (vlog)
 error		= true		; log error messages (elog)
 warning	= true		; log warning messages (wlog)
 debug		= true		; log debug messages (dlog)
@@ -11,6 +11,17 @@ printf	= false		; enable GCS print function (note: this will create lots of line
 [debug]
 dev_debug	= true	; GSC debug option
 sim_debug	= true	; GSC	debug option
+
+[debug_hud]
+show_top_hud							= true
+show_left_hud							= true
+show_right_hud						= true
+
+keybind_shift_key					= RCONTROL	; combination of this and below will toggle huds				
+keybind_toggle_top_hud 		= HOME			; keybind to cycle through available hud displays
+keybind_toggle_left_hud 	= DELETE
+keybind_toggle_right_hud 	= END
+
 
 [callbacks]
 enabled = true		; allow callbacks in debug module
