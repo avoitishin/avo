@@ -32,6 +32,8 @@ local top_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squ
 local left_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud"}
 local right_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud"}
 
+local debug_god = false
+
 --/----------------------------------------------------------------------------
 --/ Module entry point.
 --/----------------------------------------------------------------------------
@@ -64,6 +66,9 @@ function _init(ini)
 	keybind_toggle_top_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
 	keybind_toggle_left_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
 	keybind_toggle_right_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_right_hud","string","END")]
+	
+	--/ Cheat
+	debug_god = avo_utils.read_from_ini(ini,"cheat","god","bool",false)
 	
 	--/ Callbacks
 	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
@@ -409,6 +414,15 @@ function on_actor_update(delta)
 	if show_left_hud then
 		_G["avo_debug_m"][left_debug_huds[toggle_left_key].."_show"](debug_hud_left)
 	end
+	
+	--/ God mode
+	if debug_god then
+		db.actor.health = 1
+		db.actor.bleeding = 0
+		db.actor.psy_health = 1
+		db.actor.radiation = 0
+		db.actor.power = 1
+	end
 end
 
 function on_actor_save(packet)
@@ -460,7 +474,12 @@ function on_actor_task_callback(_task, _state)
 end
 
 function on_actor_hit_callback(obj, amount, local_direction, who, bone_index)
-	dlog("actor_binder.hit_callback(obj, amount, local_direction, who, bone_index) called")
+	-- dlog("actor_binder.hit_callback(obj, amount, local_direction, who, bone_index) called")
+	-- if debug_god then
+		-- if amount > 0 and math.floor(obj.health*100) < 70 then
+			-- db.actor.health = 1
+		-- end
+	-- end
 end
 
 local prev_key = nil
