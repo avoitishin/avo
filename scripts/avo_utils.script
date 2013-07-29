@@ -7,6 +7,9 @@
 --]] --------------------------------------------------------------------------
 
 --/----------------------------------------------------------------------------
+--/ INI UTILS
+--/----------------------------------------------------------------------------
+--/----------------------------------------------------------------------------
 --/ Read from ini file
 --/----------------------------------------------------------------------------
 function read_from_ini(ini,section,line,var_type,default)
@@ -46,4 +49,60 @@ function parse_ini_section_to_array(ini,section)
 		end
 	end
 	return tmp
+end
+
+--/----------------------------------------------------------------------------
+--/ NPC UTILS
+--/----------------------------------------------------------------------------
+--/----------------------------------------------------------------------------
+--/ When NPC switches online add his ID to DB
+--/----------------------------------------------------------------------------
+function add_stalker(npc)
+	if not (db.OnlineStalkers) then
+		db.OnlineStalkers = {}
+	end
+	table.insert(db.OnlineStalkers,npc:id())
+end
+--/----------------------------------------------------------------------------
+--/ When NPC goes offline remove his ID from DB
+--/----------------------------------------------------------------------------
+function del_stalker(npc)
+	if not (db.OnlineStalkers) then
+		return
+	end
+	for i = #db.OnlineStalkers, 1, -1 do
+		if (npc:id() == db.OnlineStalkers[i]) then
+			table.remove(db.OnlineStalkers,i)
+			break
+		end
+	end
+end
+--/----------------------------------------------------------------------------
+--/ Find stalker who is closest to (npc). Can pass actor, npc, or "cam"
+--/----------------------------------------------------------------------------
+function get_nearest_stalker(npc)
+	if not (db.OnlineStalkers) then
+		return
+	end
+	local stalker
+	local dist
+	local nearest_stalker, nearest_dist
+	local pos
+	for i=1, #db.OnlineStalkers do
+		stalker = db.storage[db.OnlineStalkers[i]] and db.storage[db.OnlineStalkers[i]].object or level.object_by_id(db.OnlineStalkers[i])
+		if (stalker and stalker:alive()) then
+			pos = npc == "cam" and device().cam_pos or npc:position()
+			dist = pos:distance_to_sqr(stalker:position())
+			if not (nearest_dist) then
+				nearest_dist = dist
+				nearest_stalker = stalker
+			end
+
+			if (dist < nearest_dist) then
+				nearest_dist = dist
+				nearest_stalker = stalker
+			end
+		end
+	end
+	return nearest_stalker, nearest_dist
 end
