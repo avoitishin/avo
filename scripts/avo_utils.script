@@ -52,6 +52,26 @@ function parse_ini_section_to_array(ini,section)
 end
 
 --/----------------------------------------------------------------------------
+--/ UTILS
+--/----------------------------------------------------------------------------
+--[[-- TODO -------------------------------------------------------------------
+	1. Remove dependence on xr_logic script
+--]]---------------------------------------------------------------------------
+--/----------------------------------------------------------------------------
+--/ Save variable to pstore
+--/----------------------------------------------------------------------------
+function save_var(game_object,name,value)
+	xr_logic.pstor_store(game_object,name,value)
+	return val
+end
+--/----------------------------------------------------------------------------
+--/ Load variable from pstore
+--/----------------------------------------------------------------------------
+function load_var(game_object,name,def_value)
+	return xr_logic.pstor_retrieve(game_object,name,def_value)
+end
+
+--/----------------------------------------------------------------------------
 --/ NPC UTILS
 --/----------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
@@ -78,7 +98,7 @@ function del_stalker(npc)
 	end
 end
 --/----------------------------------------------------------------------------
---/ Find stalker who is closest to (npc). Can pass actor, npc, or "cam"
+--/ Find stalker who is closest to (npc). Can pass npc, or "cam" for actors camera
 --/----------------------------------------------------------------------------
 function get_nearest_stalker(npc)
 	if not (db.OnlineStalkers) then
@@ -105,4 +125,19 @@ function get_nearest_stalker(npc)
 		end
 	end
 	return nearest_stalker, nearest_dist
+end
+--/----------------------------------------------------------------------------
+--/ Get NPC using you aiming at. Uses X-Ray Extensions for level.get_target_obj
+--/----------------------------------------------------------------------------
+function get_target_npc()
+	local obj = get_target_at_cursor()
+	if (obj) and IsStalker(obj) then
+		return obj
+	end
+end
+
+function get_target_at_cursor()
+	if (level.get_target_obj) then
+		return level.get_target_obj()
+	end
 end
