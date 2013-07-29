@@ -14,9 +14,9 @@
 local empty = function(...) end --/ plug
 local sname = script_name()
 
-local top_enabled = false
-local left_enabled = false
-local right_enabled = false
+local show_top_hud = false
+local show_left_hud = false
+local show_right_hud = false
 local keybind_shift_key = DIK_keys.DIK_RCONTROL
 local keybind_toggle_top_hud = DIK_keys.DIK_HOME
 local keybind_toggle_left_hud = DIK_keys.DIK_DELETE
@@ -24,6 +24,13 @@ local keybind_toggle_right_hud = DIK_keys.DIK_END
 local debug_hud_top = nil
 local debug_hud_left = nil
 local debug_hud_right = nil
+
+local toggle_top_key = 1
+local toggle_left_key = 1
+local toggle_right_key = 2
+local top_debug_huds = {"position_hud", "corpse_hud"}
+local left_debug_huds = {"position_hud", "corpse_hud"}
+local right_debug_huds = {"position_hud", "corpse_hud"}
 
 --/----------------------------------------------------------------------------
 --/ Module entry point.
@@ -51,9 +58,9 @@ function _init(ini)
 	if sim_debug then _G.sim_debug = true end
 	
 	--/ Debug HUD
-	top_enabled = avo_utils.read_from_ini(ini,"debug_hud","top_enabled","bool",false)
-	left_enabled = avo_utils.read_from_ini(ini,"debug_hud","left_enabled","bool",false)
-	right_enabled = avo_utils.read_from_ini(ini,"debug_hud","right_enabled","bool",false)
+	show_top_hud = avo_utils.read_from_ini(ini,"debug_hud","show_top_hud","bool",false)
+	show_left_hud = avo_utils.read_from_ini(ini,"debug_hud","show_left_hud","bool",false)
+	show_right_hud = avo_utils.read_from_ini(ini,"debug_hud","show_right_hud","bool",false)
 	keybind_shift_key = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_shift_key","string","RCONTROL")]
 	keybind_toggle_top_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
 	keybind_toggle_left_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
@@ -61,6 +68,57 @@ function _init(ini)
 	
 	--/ Callbacks
 	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
+end
+
+--/----------------------------------------------------------------------------
+--/ Debug HUDs
+--/----------------------------------------------------------------------------
+function position_hud_show(hud)
+	local pos = db.actor:position()
+	local cam
+	if (pos:distance_to_sqr(device().cam_pos) > 25) then
+		cam = true
+		pos = device().cam_pos
+	end
+
+	local lvid = cam and level.vertex_id(pos) or db.actor:level_vertex_id()
+	local gvid = cam and nil or db.actor:game_vertex_id()
+
+	local dir = device().cam_dir
+	local pos2 = level.vertex_position(lvid)
+	local valid = pos2:distance_to(pos) <= 0.7
+
+	local se_actor = not cam and alife():object(db.actor:id())
+
+	hud:set_header("-[Position Info]-")
+	hud:add_msg("Lvid",lvid)
+	hud:add_msg("Gvid",gvid)
+	hud:add_msg("Pos",string.format("%0.4f, %0.4f, %0.4f", pos.x, pos.y, pos.z))
+	hud:add_msg("Dir",string.format("%0.3f, %0.3f, %0.3f HP = %0.3f, %0.3f", dir.x, dir.y, dir.z,dir:getH(),dir:getP()))
+	hud:add_msg("Angle",se_actor and se_actor.angle and string.format("%0.3f, %0.3f, %0.3f", se_actor.angle.x, se_actor.angle.y, se_actor.angle.z))
+	hud:add_msg("Valid",valid)
+	hud:add_msg("FOV",math.floor(device().fov))
+
+	local Y, M, D, h, m, s, ms
+	Y, M, D, h, m, s, ms = game.get_game_time():get( Y, M, D, h, m, s, ms )
+	hud:add_msg("GameTime",string.format("Y:%d M:%d D:%d h:%d m:%d s:%d ms:%d",Y, M, D, h, m, s, ms))
+	hud:display()
+end
+
+function corpse_hud_show(hud)
+	local corpses = release_body_manager.get_release_body_manager().release_objects_table
+	local id, obj
+	hud:set_header("-[Dead People]-")
+	hud:add_msg("Count",#corpses)
+	for i=1,#corpses do
+		id = corpses[i].id
+		obj = id and level.object_by_id(id)
+		if (obj) then
+			hud:add_msg("",obj:name().."  DeathTime = "..obj:death_time())
+		end
+	end
+	
+	hud:display()
 end
 
 --/----------------------------------------------------------------------------
@@ -136,15 +194,10 @@ function on_actor_net_spawn(data)
 	dlog("actor_binder.net_spawn(data) called")
 	
 	--/ Setup debug huds
-	debug_hud_top = hud_tool("debug_hud_top")
-	debug_hud_left = hud_tool("debug_hud_left")
-	debug_hud_right = hud_tool("debug_hud_right")
+	if show_top_hud then debug_hud_top = hud_tool("debug_hud_top") end
+	if show_left_hud then debug_hud_left = hud_tool("debug_hud_left") end
+	if show_right_hud then debug_hud_right = hud_tool("debug_hud_right") end
 	
-	debug_hud_top:set_header("-[Pos. Info]-")
-	debug_hud_top:add_msg("TEST")
-	debug_hud_top:add_msg("More test bkah blah")
-	debug_hud_top:add_msg("More test bkah blah", 777)
-	debug_hud_top:display()
 end
 
 function on_actor_net_destroy()
@@ -157,6 +210,17 @@ end
 
 function on_actor_update(delta)
 	-- dlog("actor_binder.update(delta) called")
+	
+	--/ Update debug hud displays
+	if show_top_hud then
+		_G["avo_debug_m"][top_debug_huds[toggle_top_key].."_show"](debug_hud_top)
+	end
+	if show_right_hud then
+		_G["avo_debug_m"][right_debug_huds[toggle_right_key].."_show"](debug_hud_right)
+	end
+	if show_left_hud then
+		_G["avo_debug_m"][left_debug_huds[toggle_left_key].."_show"](debug_hud_left)
+	end
 end
 
 function on_actor_save(packet)
@@ -213,12 +277,25 @@ end
 
 local prev_key = nil
 function on_actor_on_key(key)
+	--/ Toggle debug hud displays
 	if key == keybind_toggle_top_hud and prev_key == keybind_shift_key then
-		vlog("TOP hud toggled")
+		if toggle_top_key < #top_debug_huds then
+			toggle_top_key = toggle_top_key + 1
+		else
+			toggle_top_key = 1
+		end
 	elseif key == keybind_toggle_left_hud and prev_key == keybind_shift_key then
-		vlog("LEFT hud toggled")
+		if toggle_left_key < #left_debug_huds then
+			toggle_left_key = toggle_left_key + 1
+		else
+			toggle_left_key = 1
+		end
 	elseif key == keybind_toggle_right_hud and prev_key == keybind_shift_key then
-		vlog("RIGHT hud toggled")
+		if toggle_right_key < #right_debug_huds then
+			toggle_right_key = toggle_right_key + 1
+		else
+			toggle_right_key = 1
+		end
 	end
 	prev_key = key
 end
