@@ -62,12 +62,13 @@ end
 --/ -----------------------------------------------------------------
 --/ Initialize module
 --/ -----------------------------------------------------------------
-function init()
+function _init(ini)
 	if is_initialized then return end --/>
 	is_initialized = true
 	sim = alife()
-	this.build_tables() --/ read config-file
+	this.build_tables(ini) --/ read config-file
 	this.translate_funcs()
+	avo_log.dlog("netpk initialized")
 end
 --/ -----------------------------------------------------------------
 --/ Constants and their converters in flags
@@ -3118,9 +3119,9 @@ function net_dummy:print() end
 --/------------------------------------------------------------------------------------------------
 --/ read configs
 --/------------------------------------------------------------------------------------------------
-function build_tables()
+function build_tables(ini)
 	--/ читаем конфиг-файл модуля
-	local ltx = ini_file("mods\\"..sModule..".ltx") --/ объект конфиг-файла (из папки мода)
+	local ltx = ini --ini_file("mods\\"..sModule..".ltx") --/ объект конфиг-файла (из папки мода)
 	if not ltx:section_exist("clsid_to_class") then
 		ltx = ini_file(sModule..".ltx") --/ проверяем в корневой папке конфиг-файлов
 	end
