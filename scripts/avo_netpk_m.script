@@ -1272,7 +1272,7 @@ end
 function net_base:__dumpDesc()
 	local str = ""
 	for _,sub_class in ipairs(self.bases) do
-		str = str .. sub_class:__dump()
+		str = str .. sub_class:__dumpDesc()
 	end
 	str = str .. ";-- "..self.name.." part ---\n"
 	for _,prop in ipairs(self.st_props) do
