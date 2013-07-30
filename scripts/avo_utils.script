@@ -52,11 +52,8 @@ function parse_ini_section_to_array(ini,section)
 end
 
 --/----------------------------------------------------------------------------
---/ UTILS
+--/ GAME UTILS
 --/----------------------------------------------------------------------------
---[[-- TODO -------------------------------------------------------------------
-	1. Remove dependence on xr_logic script
---]]---------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
 --/ Save variable to pstore
 --/----------------------------------------------------------------------------
@@ -70,10 +67,6 @@ end
 function load_var(game_object,name,def_value)
 	return xr_logic.pstor_retrieve(game_object,name,def_value)
 end
-
---/----------------------------------------------------------------------------
---/ NPC UTILS
---/----------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
 --/ When NPC switches online add his ID to DB
 --/----------------------------------------------------------------------------
@@ -140,4 +133,35 @@ function get_target_at_cursor()
 	if (level.get_target_obj) then
 		return level.get_target_obj()
 	end
+end
+
+--/----------------------------------------------------------------------------
+--/ Check if object is a weapon
+--/----------------------------------------------------------------------------
+function item_is_fa(o,c)
+	if not c then
+		c = o and o:clsid()
+	end
+	local t = {
+	[clsid.wpn_pm_s] = true,
+	[clsid.wpn_walther_s] = true,
+	[clsid.wpn_usp45_s] = true,
+	[clsid.wpn_hpsa_s] = true,
+	[clsid.wpn_bm16_s] = true,
+	[clsid.wpn_shotgun_s] = true,
+	[clsid.wpn_auto_shotgun_s] = true,
+	[clsid.wpn_ak74_s] = true,
+	[clsid.wpn_lr300_s] = true,
+	[clsid.wpn_groza_s] = true,
+	[clsid.wpn_val_s] = true,
+	[clsid.wpn_vintorez_s] = true,
+	[clsid.wpn_svu_s] = true,
+	[clsid.wpn_svd_s] = true,
+	[clsid.wpn_rg6_s] = true,
+	[clsid.wpn_rpg7_s] = true,
+	[clsid.wpn_knife_s] = true}
+	if c and t[c] then
+		return true
+	end
+	return false
 end
