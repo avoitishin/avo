@@ -396,7 +396,8 @@ _r_l8u16v  = function(pk) return _r_chunk(pk,pk:r_u8 (), 'u16'    ) end
 _r_l16u8v  = function(pk) return _r_chunk(pk,pk:r_u16(), 'u8'     ) end
 _r_l32u8v  = function(pk) return _r_chunk(pk,pk:r_s32(), 'u8'     ) end
 _r_l32u16v = function(pk) return _r_chunk(pk,pk:r_s32(), 'u16'    ) end
-_r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'stringZ') end
+-- _r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'stringZ') end
+_r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'sz') end
 
 _w_q8v     = function(pk,tbl) _w_chunk(pk,tbl,'u8') end
 _w_q8v3    = _w_q8v
@@ -410,7 +411,8 @@ _w_l8u16v  = function(pk,tbl) pk:w_u8 (#tbl) _w_chunk(pk,tbl,'u16'    ) end
 _w_l16u8v  = function(pk,tbl) pk:w_u16(#tbl) _w_chunk(pk,tbl,'u8'     ) end
 _w_l32u8v  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'u8'     ) end
 _w_l32u16v = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'u16'    ) end
-_w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'stringZ') end
+-- _w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'stringZ') end
+_w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'sz') end
 --/ -------------------------
 _r_l8szbv = function(pk)
 	tbl = {}
@@ -499,10 +501,12 @@ end
 --/ prop.type: custom data:: packed binary string - look perl's or php's pack function format
 --/ -------------------------
 _r_cd = function(pk)
+	local data = pk:r_stringZ()
 	if not disabled_convert_cd then
-		return custom_data(pk:r_stringZ()) --/> to helpers
+		data = custom_data(data)
+		return data:getTable() --/> to helpers
 	end
-	return pk:r_stringZ() --/> 'string'
+	return data --/> 'string'
 end
 _w_cd = function(pk,val)
 	if not disabled_convert_cd then
@@ -1692,7 +1696,7 @@ function net_cse_alife_object:__init(obj,mode)
 		{ name = 'direct_control',  type = 'u32', default =  1        },
 		{ name = 'level_vertex_id', type = 'u32', default = -1        },
 		{ name = 'object_flags',    type = 'h32', default =  0        },
-		--{ name = 'custom_data',   type = 'sz',  default = ''        }, --/#-# if only 'string'
+		-- { name = 'custom_data',   type = 'sz',  default = ''        }, --/#-# if only 'string'
 		{ name = 'custom_data',     type = 'cd',  default = _def_cd() }, --/#!# used helpers
 		{ name = 'story_id',        type = 's32', default = -1        },
 		{ name = 'spawn_story_id',  type = 's32', default = -1        }
@@ -3131,7 +3135,7 @@ function build_tables(ini)
 		disabled_net_dummy   = utils.cfg_get_bool(ltx, "options", "disable_net_dummy",             nil, false, disabled_net_dummy)
 		enabled_debug        = utils.cfg_get_bool(ltx, "options", "enable_debug",                  nil, false, enabled_debug)
 		if enabled_debug then
-			--bits_mode[1]=5 bits_mode[2]=6 bits_mode[3]=7 --/ for global debug
+			-- bits_mode[1]=5 bits_mode[2]=6 bits_mode[3]=7 --/ for global debug
 			bits_mode[4]=0 bits_mode[5]=5 bits_mode[6]=6 bits_mode[7]=7 --/ for 'manual' debug
 		end
 		local iBitMode = (db.is_dbg0 and bit_ver +8) or 15 --/ for debug-mode
