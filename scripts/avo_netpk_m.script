@@ -68,7 +68,6 @@ function _init(ini)
 	sim = alife()
 	this.build_tables(ini) --/ read config-file
 	this.translate_funcs()
-	avo_log.dlog("netpk initialized")
 end
 --/ -----------------------------------------------------------------
 --/ Constants and their converters in flags
