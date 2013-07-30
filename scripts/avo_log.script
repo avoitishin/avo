@@ -27,35 +27,35 @@ function dbg_format(...)
 	if type(arg[1]) == 'number' then --/ stack depth override
 		stack_depth = table.remove(arg, 1) --/ shift first value
 	end
-	if debug == nil then return string.format(unpack(arg)) end --/ debug not available
+	if debug == nil then return avo_string.str_format(unpack(arg)) end --/ debug not available
 	local info_table = debug.getinfo(stack_depth)
-	if not info_table then return string.format(unpack(arg)) end
+	if not info_table then return avo_string.str_format(unpack(arg)) end
 	local script = avo_string.get_filename(info_table.short_src)
-	return string.format("(%s:%d) %s", script, info_table.currentline, string.format(unpack(arg)))
+	return avo_string.str_format("(%s:%d) %s", script, info_table.currentline, avo_string.str_format(unpack(arg)))
 end
 --/----------------------------------------------------------------------------
 --/ Error log
 --/----------------------------------------------------------------------------
 function elog(...)
-  log(string.format("[ERROR] %s", dbg_format(...))) 
+  log(avo_string.str_format("[ERROR] %s", dbg_format(...))) 
 end
 --/----------------------------------------------------------------------------
 --/ Debug (info) log
 --/----------------------------------------------------------------------------
 function dlog(...)
-	log(string.format("[DEBUG] %s", dbg_format(...)))
+	log(avo_string.str_format("[DEBUG] %s", dbg_format(...)))
 end
 --/----------------------------------------------------------------------------
 --/ Warning log
 --/----------------------------------------------------------------------------
 function wlog(...)
-	log(string.format("[WARN] %s", dbg_format(...)))
+	log(avo_string.str_format("[WARN] %s", dbg_format(...)))
 end
 --/----------------------------------------------------------------------------
 --/ printf (XRay) log
 --/----------------------------------------------------------------------------
 function printf(...)
-	log(string.format("[XRAY] %s", dbg_format(...)))
+	log(avo_string.str_format("[XRAY] %s", dbg_format(...)))
 end
 --/----------------------------------------------------------------------------
 --/ Visual log (show in-game message)
@@ -63,7 +63,7 @@ end
 local bufferedmessages = {}
 function vlog(...)
 	local msg = dbg_format(...)
-	log(string.format("[VLOG] %s", msg)) --/ save to log as well
+	log(avo_string.str_format("[VLOG] %s", msg)) --/ save to log as well
 	if msg then
 		table.insert(bufferedmessages, msg)
 	end
