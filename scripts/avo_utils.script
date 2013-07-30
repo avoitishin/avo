@@ -183,3 +183,10 @@ function item_is_fa(o,c)
 	end
 	return false
 end
+
+--/----------------------------------------------------------------------------
+--/ Convert vector to string
+--/----------------------------------------------------------------------------
+function vector_to_string(vec)
+	return vec.x..","..vec.y..","..vec.z
+end
