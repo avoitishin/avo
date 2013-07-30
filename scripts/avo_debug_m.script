@@ -1,9 +1,9 @@
 --[[-- INFO -------------------------------------------------------------------
 	File				: avo_debug_m
 	Description : Debug functions and callbacks for most game events
-	Credits		 	: aVo
+	Credits		 	: aVo, Alundaio
 	Revision		: 0.4
-	Change Date : 07.26.2013
+	Change Date : 07.29.2013
 --]]---------------------------------------------------------------------------
 --[[-- TODO -------------------------------------------------------------------
 	1. luacap debug functionality
@@ -11,7 +11,6 @@
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
-local empty = function(...) end --/ plug
 local sname = script_name()
 
 local show_top_hud = false
@@ -28,11 +27,11 @@ local debug_hud_right = nil
 local toggle_top_key = 4
 local toggle_left_key = 3
 local toggle_right_key = 5
-local top_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud"}
-local left_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud"}
-local right_debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud"}
+local debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud", "planner_hud", "wounded_hud", "anim_hud", "behavior_hud"}
 
 local debug_god = false
+
+local actions_by_stalker_ids = nil
 
 --/----------------------------------------------------------------------------
 --/ Module entry point.
@@ -46,11 +45,11 @@ function _init(ini)
 	local warning_log = avo_utils.read_from_ini(ini,"logging","warning","bool",false)
 	local error_log = avo_utils.read_from_ini(ini,"logging","error","bool",false)
 	local visual_log = avo_utils.read_from_ini(ini,"logging","visual","bool",false)
-	if debug_log then _G.dlog = avo_log.dlog else _G.dlog = empty end
-	if warning_log then _G.wlog = avo_log.wlog else _G.wlog = empty end
-	if error_log then _G.elog = avo_log.elog else _G.elog = empty end
-	if visual_log then _G.vlog = avo_log.vlog else _G.vlog = empty end
-	if printf_log then _G.printf = avo_log.printf else _G.printf = empty end
+	if debug_log then _G.dlog = avo_log.dlog end
+	if warning_log then _G.wlog = avo_log.wlog end
+	if error_log then _G.elog = avo_log.elog end
+	if visual_log then _G.vlog = avo_log.vlog end
+	if printf_log then _G.printf = avo_log.printf end
 	
 	--/ Debug
 	local dev_debug = avo_utils.read_from_ini(ini,"debug","dev_debug","bool",false)
@@ -72,6 +71,8 @@ function _init(ini)
 	
 	--/ Callbacks
 	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
+	
+	build_actions() --/ build stalker action ids table
 end
 
 --/----------------------------------------------------------------------------
@@ -112,7 +113,7 @@ function position_hud_show(hud)
 	hud:display()
 end
 --/----------------------------------------------------------------------------
---/ Corpses
+--/ Corpses information
 --/----------------------------------------------------------------------------
 function corpse_hud_show(hud)
 	local corpses = release_body_manager.get_release_body_manager().release_objects_table
@@ -316,6 +317,194 @@ function enemy_hud_show(hud)
 	hud:set_header("-[Stalker Enemy Info]-")
 	hud:display()
 end
+--/----------------------------------------------------------------------------
+--/ Planner information
+--/----------------------------------------------------------------------------
+function planner_hud_show(hud)
+	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	hud:set_header("-[Planner Info]-")
+	if (obj) then
+		local manager = obj.motivation_action_manager and obj:motivation_action_manager()
+		if (manager) then
+			local combat_action = manager:action(stalker_ids.action_combat_planner)
+			local combat_action_planner = cast_planner(combat_action)
+
+			hud:add_msg("Name",obj:name())
+
+			local actid = manager:current_action_id()
+			local name = actions_by_stalker_ids[actid] or "script"
+			hud:add_msg("Mgr. Act",name)
+			hud:add_msg("Mgr. Act ID",manager:current_action_id())
+
+			actid = combat_action_planner:current_action_id()
+			name = actions_by_stalker_ids[actid] or "script"
+			hud:add_msg("Combat Act",name)
+			hud:add_msg("Combat Act ID",combat_action_planner:current_action_id())
+
+			local st = db.storage[obj:id()]
+			if (st) then
+				local sm = st.state_mgr
+				if sm then --/ avo: crash "attempt to index local 'sm' (a nil value)"
+					hud:add_msg("alife",sm.alife)
+					hud:add_msg("combat",sm.combat)
+					if (sm.eval_states) then
+						hud:add_msg("Weapon Locked",post_combat_idle.weapon_locked(obj))
+						hud:add_msg("Animstate Locked",sm.eval_states[sm.properties["animstate_locked"]])
+						hud:add_msg("Animation Locked",sm.eval_states[sm.properties["animation_locked"]])
+						hud:add_msg("Movement",sm.eval_states[sm.properties["movement"]])
+						hud:add_msg("Animstate",sm.eval_states[sm.properties["animstate"]])
+						hud:add_msg("Animation",sm.eval_states[sm.properties["animation"]])
+						hud:add_msg("Smartcover",sm.eval_states[sm.properties["smartcover"]])
+					end
+				end
+			end
+		end
+	end
+	hud:display()
+end
+--/----------------------------------------------------------------------------
+--/ Wounded information
+--/----------------------------------------------------------------------------
+function wounded_hud_show(hud)
+	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	hud:set_header("-[Wounded Info]-")
+	if (obj) then
+		hud:add_msg("Name",obj:name())
+		local st = db.storage[obj:id()]
+		if (st) then
+			local tg = time_global()
+			if (xr_wounded.is_wounded(obj)) then
+				hud:add_msg("help_wounded helper id",st.wounded_already_selected)
+			end
+
+			if (st.help_wounded) then
+				local vo = st.help_wounded.selected_id and level.object_by_id(st.help_wounded.selected_id)
+				hud:add_msg("help_wounded Victim",vo and vo:name())
+				hud:add_msg("help_wounded Vertex",st and st.help_wounded.vertex_id)
+				hud:add_msg("help_wounded Stage",st and st.help_wounded.stage)
+			end
+			if (st.kill_wounded) then
+				local vo = st.kill_wounded.current_id and level.object_by_id(st.kill_wounded.current_id)
+				hud:add_msg("kill_wounded Victim",vo and vo:name())
+				hud:add_msg("kill_wounded Timer",st.kill_wounded.timer and st.kill_wounded.timer - tg)
+				hud:add_msg("kill_wounded Weapon",st.kill_wounded.weapon and st.kill_wounded.weapon:name())
+			end
+
+			if (st.victim_surrender) then
+				local po = level.object_by_id(st.victim_surrender)
+				hud:add_msg("Surrender to",po and po:name())
+			end
+		end
+	end
+	hud:display()
+end
+--/----------------------------------------------------------------------------
+--/ Animation information
+--/----------------------------------------------------------------------------
+function anim_hud_show(hud)
+	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	if (near) then
+		local st = db.storage[near:id()]
+		if (st) then
+			local sobj = alife():object(near:id())
+
+			if (st.active_scheme == "animpoint") then
+				local avail_animations = ""
+				if st and st.animpoint then
+					if st.animpoint.avail_animations then
+						for k, v in pairs(st.animpoint.avail_animations) do
+							avail_animations = avail_animations .. "," .. v
+						end
+					end
+
+					local approved_actions = ""
+					local description = st and st.animpoint and st.animpoint.description
+					local avail_actions = description and xr_animpoint_predicates.associations[description]
+					local actions = ""
+					if avail_actions then
+						for k,v in pairs(avail_actions) do
+							if (v.predicate(near:id(), st.animpoint.use_camp)) then
+								approved_actions = v.name .. ", " .. approved_actions
+							end
+							actions = v.name .. ", " .. actions
+						end
+					end
+
+					hud:add_msg("Section Name",sobj:section_name())
+					hud:add_msg("Avail. Animations",avail_animations)
+					hud:add_msg("Avail. Actions",actions)
+					hud:add_msg("Approved Actions",approved_actions)
+					hud:add_msg("Cover Name",st.animpoint.cover_name)
+					hud:add_msg("Use Camp",st.animpoint.use_camp)
+					hud:add_msg("Description",description)
+					hud:add_msg("Smart Direction",st.animpoint.smart_direction and alun_utils.vector_to_string(st.animpoint.smart_direction))
+				end
+			elseif (st.active_scheme == "walker") then
+				local avail_actions = xr_animpoint_predicates.associations["walker_camp"]
+				local actions = ""
+				local approved_actions = ""
+				if avail_actions then
+					for k,v in pairs(avail_actions) do
+						actions = actions .. "," .. v.name
+						if (v.predicate(near:id())) then
+							approved_actions = v.name .. "," .. approved_actions
+						end
+					end
+				end
+
+				hud:add_msg("Section Name",sobj:section_name())
+				hud:add_msg("Use Camp",st and st.walker and st.walker.use_camp)
+				hud:add_msg("Avail. Actions",actions)
+				hud:add_msg("Approved Actions",approved_actions)
+				hud:add_msg("Def. State Mov.",st and st.walker and st.walker.suggested_state.moving)
+				hud:add_msg("Def. State Stand.", st and st.walker and st.walker.suggested_state.standing)
+			end
+
+			hud:add_msg("In Cover",near:in_smart_cover())
+
+			local cover = near:get_dest_smart_cover_name()
+			hud:add_msg("Dest Cover",cover)
+			hud:add_msg("UseSmartCoverOnly",near:use_smart_covers_only())
+		end
+	end
+	hud:set_header("-[Animation Info]-")
+	hud:display()
+end
+--/----------------------------------------------------------------------------
+--/ Behavior information (not functional in vanilla, probably meant for alundaio's)
+--/ custom behaviors
+--/----------------------------------------------------------------------------
+function behavior_hud_show(hud)
+	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	if (near) then
+		-- local st = db.storage[near:id()].beh
+		local st = db.storage[near:id()]
+		if (st) then
+			local target = st.desired_target and st.desired_target.object and st.desired_target.object:name()
+			local target_type = st.target
+			local pos = st.desired_target and st.desired_target.position and vec_to_str(st.desired_target.position)
+			local beh = st.desired_behavior
+			local assist_pt = st.assist_point
+			local state = st.last_state
+
+			hud:add_msg("Target",target)
+			hud:add_msg("Type",target_type)
+			hud:add_msg("Pos",pos)
+			hud:add_msg("Behavior",beh)
+			hud:add_msg("Assist Pt",assist_pt)
+			hud:add_msg("State",state)
+			hud:add_msg("State",state)
+			st = db.storage[near:id()]
+			hud:add_msg("PT Index",st.beh and st.beh.path_index)
+			hud:add_msg("PT wait",st.beh and st.beh.wait_delay and st.beh.wait_delay - time_global())
+			hud:add_msg("PT reached",st.beh and st.beh.am_i_reached ~= nil)
+			-- hud:add_msg("Gather Items",st.gather_items and st.gather_items.gather_items_enabled and xr_logic.pick_section_from_condlist(db.actor, near, st.gather_items.gather_items_enabled))
+			-- hud:add_msg("Loot Corpses",st.corpse_detection and st.corpse_detection.corpse_detection_enabled and xr_logic.pick_section_from_condlist(db.actor, near, st.corpse_detection.corpse_detection_enabled))
+		end
+	end
+	hud:set_header("-[Behavior Info]-")
+	hud:display()
+end
 
 --/----------------------------------------------------------------------------
 --/ Build call stack trace 
@@ -406,13 +595,13 @@ function on_actor_update(delta)
 	
 	--/ Update debug hud displays
 	if show_top_hud then
-		_G["avo_debug_m"][top_debug_huds[toggle_top_key].."_show"](debug_hud_top)
+		_G["avo_debug_m"][debug_huds[toggle_top_key].."_show"](debug_hud_top)
 	end
 	if show_right_hud then
-		_G["avo_debug_m"][right_debug_huds[toggle_right_key].."_show"](debug_hud_right)
+		_G["avo_debug_m"][debug_huds[toggle_right_key].."_show"](debug_hud_right)
 	end
 	if show_left_hud then
-		_G["avo_debug_m"][left_debug_huds[toggle_left_key].."_show"](debug_hud_left)
+		_G["avo_debug_m"][debug_huds[toggle_left_key].."_show"](debug_hud_left)
 	end
 	
 	--/ God mode
@@ -486,19 +675,19 @@ local prev_key = nil
 function on_actor_on_key(key)
 	--/ Toggle debug hud displays
 	if key == keybind_toggle_top_hud and prev_key == keybind_shift_key then
-		if toggle_top_key < #top_debug_huds then
+		if toggle_top_key < #debug_huds then
 			toggle_top_key = toggle_top_key + 1
 		else
 			toggle_top_key = 1
 		end
 	elseif key == keybind_toggle_left_hud and prev_key == keybind_shift_key then
-		if toggle_left_key < #left_debug_huds then
+		if toggle_left_key < #debug_huds then
 			toggle_left_key = toggle_left_key + 1
 		else
 			toggle_left_key = 1
 		end
 	elseif key == keybind_toggle_right_hud and prev_key == keybind_shift_key then
-		if toggle_right_key < #right_debug_huds then
+		if toggle_right_key < #debug_huds then
 			toggle_right_key = toggle_right_key + 1
 		else
 			toggle_right_key = 1
@@ -517,6 +706,7 @@ end
 function on_stalker_net_destroy(motivator_binder)
 	dlog("motivator_binder.net_destroy() called")
 end
+
 
 --/----------------------------------------------------------------------------
 --/ Class to create hud tools
@@ -552,4 +742,85 @@ function hud_tool:clear()
 	if (self.hud) then
 		self.hud:wnd():TextControl():SetText("")
 	end
+end
+
+
+--/----------------------------------------------------------------------------
+--/ Build stalker actions table (from lua_help and xr_actions_id)
+--/----------------------------------------------------------------------------
+function build_actions()
+	actions_by_stalker_ids = {}
+	for k,v in pairs(_G.xr_actions_id) do
+		actions_by_stalker_ids[v] = k
+	end
+	actions_by_stalker_ids[7] = "action_accomplish_task"
+	actions_by_stalker_ids[16] = "action_aim_enemy"
+	actions_by_stalker_ids[88] = "action_alife_planner"
+	actions_by_stalker_ids[90] = "action_anomaly_planner"
+	actions_by_stalker_ids[89] = "action_combat_planner"
+	actions_by_stalker_ids[9] = "action_communicate_with_customer"
+	actions_by_stalker_ids[36] = "action_critically_wounded"
+	actions_by_stalker_ids[73] = "action_danger_by_sound_planner"
+	actions_by_stalker_ids[85] = "action_danger_grenade_look_around"
+	actions_by_stalker_ids[72] = "action_danger_grenade_planner"
+	actions_by_stalker_ids[86] = "action_danger_grenade_search"
+	actions_by_stalker_ids[82] = "action_danger_grenade_take_cover"
+	actions_by_stalker_ids[84] = "action_danger_grenade_take_cover_after_explosion"
+	actions_by_stalker_ids[83] = "action_danger_grenade_wait_for_explosion"
+	actions_by_stalker_ids[80] = "action_danger_in_direction_detour"
+	actions_by_stalker_ids[79] = "action_danger_in_direction_hold_position"
+	actions_by_stalker_ids[78] = "action_danger_in_direction_look_out"
+	actions_by_stalker_ids[71] = "action_danger_in_direction_planner"
+	actions_by_stalker_ids[81] = "action_danger_in_direction_search"
+	actions_by_stalker_ids[77] = "action_danger_in_direction_take_cover"
+	actions_by_stalker_ids[91] = "action_danger_planner"
+	actions_by_stalker_ids[75] = "action_danger_unknown_look_around"
+	actions_by_stalker_ids[70] = "action_danger_unknown_planner"
+	actions_by_stalker_ids[76] = "action_danger_unknown_search"
+	actions_by_stalker_ids[74] = "action_danger_unknown_take_cover"
+	actions_by_stalker_ids[0] = "action_dead"
+	actions_by_stalker_ids[87] = "action_death_planner"
+	actions_by_stalker_ids[25] = "action_detour_enemy"
+	actions_by_stalker_ids[1] = "action_dying"
+	actions_by_stalker_ids[15] = "action_find_ammo"
+	actions_by_stalker_ids[13] = "action_find_item_to_kill"
+	actions_by_stalker_ids[2] = "action_gather_items"
+	actions_by_stalker_ids[24] = "action_get_distance"
+	actions_by_stalker_ids[12] = "action_get_item_to_kill"
+	actions_by_stalker_ids[17] = "action_get_ready_to_kill"
+	actions_by_stalker_ids[23] = "action_hold_position"
+	actions_by_stalker_ids[19] = "action_kill_enemy"
+	actions_by_stalker_ids[29] = "action_kill_enemy_if_not_visible"
+	actions_by_stalker_ids[37] = "action_kill_if_enemy_critically_wounded"
+	actions_by_stalker_ids[35] = "action_kill_if_player_on_the_path"
+	actions_by_stalker_ids[33] = "action_kill_wounded_enemy"
+	actions_by_stalker_ids[22] = "action_look_out"
+	actions_by_stalker_ids[14] = "action_make_item_killing"
+	actions_by_stalker_ids[3] = "action_no_alife"
+	actions_by_stalker_ids[34] = "action_post_combat_wait"
+	actions_by_stalker_ids[32] = "action_prepare_wounded_enemy"
+	actions_by_stalker_ids[8] = "action_reach_customer_location"
+	actions_by_stalker_ids[6] = "action_reach_task_location"
+	actions_by_stalker_ids[30] = "action_reach_wounded_enemy"
+	actions_by_stalker_ids[20] = "action_retreat_from_enemy"
+	actions_by_stalker_ids[92] = "action_script"
+	actions_by_stalker_ids[26] = "action_search_enemy"
+	actions_by_stalker_ids[4] = "action_smart_terrain_task"
+	actions_by_stalker_ids[5] = "action_solve_zone_puzzle"
+	actions_by_stalker_ids[28] = "action_sudden_attack"
+	actions_by_stalker_ids[21] = "action_take_cover"
+	actions_by_stalker_ids[95] = "script_combat_planner"
+	actions_by_stalker_ids[96] = "reach_task_location"
+	actions_by_stalker_ids[142] = "corpse_exist"
+	actions_by_stalker_ids[147] = "wounded_exist"
+	actions_by_stalker_ids[192] = "state_mgr"
+	actions_by_stalker_ids[193] = "state_mgr_to_idle_combat"
+	actions_by_stalker_ids[194] = "state_mgr_to_idle_alife"
+	actions_by_stalker_ids[195] = "state_mgr_to_idle_items"
+	actions_by_stalker_ids[307] = "smartcover_action"
+	actions_by_stalker_ids[343] = "meet_contact"
+	actions_by_stalker_ids[3865] = "action_walker"
+	actions_by_stalker_ids[188112] = "kill_wounded"
+	actions_by_stalker_ids[188111] = "beh"
+	actions_by_stalker_ids[90005] = "gather_items"
 end
