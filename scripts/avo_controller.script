@@ -10,12 +10,13 @@
 --/ Local variables
 --/----------------------------------------------------------------------------
 local sname = script_name() --/ script name
+local fn_empty = function(...) end --/ plug
 
 local fs = getFS() --/ get file manager object
 
 local modules_root = "$avo_modules$" --/ location of module configs. This is set in fsgame.ltx
 local modules_path = nil --/ location of module configs for ini_file initialization
-local modules_mask = "avo_*_m.ltx" --/ only files maching this pattern will be loaded
+local modules_mask = "*_avo_*_m.ltx" --/ only files maching this pattern will be loaded
 local module_section = "module" --/ this section is required for each module
 local modules_populated = false --/ are modules initialized flag
 local modules = {} --/ all modules (enabled and disabled) are stored here
@@ -26,8 +27,15 @@ local schemes = {} --/ logic schemes
 --/ Initialize mod. Called from _g.start_game_callback. Debug or any other modules are unavailable
 --/----------------------------------------------------------------------------
 function _init()
-	_G.ASSERT = ASSERT
+	_G.ASSERT = this.ASSERT
 	_G.abort = this.abort
+	_G.fn_empty = this.fn_empty
+	_G.dlog = fn_empty
+	_G.vlog = fn_empty
+	_G.wlog = fn_empty
+	_G.elog = fn_empty
+	_G.printf = fn_empty
+	
   init_signals() --/ initialize signals manager
 	modules_path = gsub_path() --/ get path for ini_file
 	init_modules() --/ initialize modules
@@ -52,7 +60,8 @@ end
 --/ Enable and initialize module
 --/----------------------------------------------------------------------------
 function init_module(name, ini)
-	local module = _G[name]
+	local scr_name = avo_utils.read_from_ini(ini, module_section, "script", "string", string.gsub(name, "^%d+_", "")) --/ added for sorting config files and loading sequence
+	local module = _G[scr_name]
 	if module and type(module._init) == "function" then
 		module._init(ini) --/ initialize module passing module ini_file instance to it
 		modules[name].enabled = true --/ if previous step was successful, mark module as enabled
@@ -77,6 +86,7 @@ local function get_module_names()
 		avo_log.wlog("NO MODULE FILES found in %s", modules_root)
 		return t --/ or abort
 	end
+	f_list:Sort(FS.FS_sort_by_name_up)
 	for i = 0, f_cnt - 1 do
 		local file = f_list:GetAt(i)
 		local f_name = file:NameShort()
