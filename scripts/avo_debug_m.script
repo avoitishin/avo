@@ -27,7 +27,20 @@ local debug_hud_right = nil
 local toggle_top_key = 4
 local toggle_left_key = 3
 local toggle_right_key = 5
-local debug_huds = {"position_hud", "corpse_hud", "position_other_hud", "squad_info_hud", "stalker_info_hud", "enemy_hud", "planner_hud", "wounded_hud", "anim_hud", "behavior_hud"}
+local debug_huds = {
+	"position_hud", 
+	--[["corpse_hud",]]--
+	"position_other_hud", 
+	"squad_info_hud", 
+	"stalker_info_hud", 
+	"enemy_hud", 
+	"planner_hud", 
+	"wounded_hud", 
+	"anim_hud", 
+	--[["behavior_hud",]]-- 
+	"weapon_hud",
+	"stalker_data_hud"
+}
 
 local debug_god = false
 
@@ -137,7 +150,7 @@ function position_other_hud_show(hud)
 	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
 
 	hud:set_header("-[NPC Position Info]-")
-	if (obj) then
+	if obj then
 		local lvid, gvid = obj:level_vertex_id(), obj:game_vertex_id()
 		local pos = obj:position()
 		local dir = obj:direction()
@@ -190,6 +203,7 @@ function stalker_info_hud_show(hud)
 	if (st) then
 		local sobj = alife():object(near:id())
 
+		hud:add_msg("Stalker Name",near:character_name())
 		hud:add_msg("Section Name",sobj:section_name())
 		hud:add_msg("ID",near:id())
 		--hud:add_msg("Name",near:name())
@@ -437,7 +451,7 @@ function anim_hud_show(hud)
 					hud:add_msg("Cover Name",st.animpoint.cover_name)
 					hud:add_msg("Use Camp",st.animpoint.use_camp)
 					hud:add_msg("Description",description)
-					hud:add_msg("Smart Direction",st.animpoint.smart_direction and alun_utils.vector_to_string(st.animpoint.smart_direction))
+					hud:add_msg("Smart Direction",st.animpoint.smart_direction and avo_utils.vector_to_string(st.animpoint.smart_direction))
 				end
 			elseif (st.active_scheme == "walker") then
 				local avail_actions = xr_animpoint_predicates.associations["walker_camp"]
@@ -503,6 +517,124 @@ function behavior_hud_show(hud)
 		end
 	end
 	hud:set_header("-[Behavior Info]-")
+	hud:display()
+end
+--/----------------------------------------------------------------------------
+--/ Weapon information
+--/----------------------------------------------------------------------------
+function weapon_hud_show(hud)
+	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local wpn
+	if (near) then
+		wpn = near:active_item()
+	else
+		near = db.actor
+		wpn = db.actor:active_item()
+	end
+
+	if (wpn == nil or not avo_utils.item_is_fa(wpn)) then
+		hud:clear()
+		return
+	end
+
+	local sobj = alife():object(wpn:id())
+	local pk = get_netpk(sobj) --/ get netpacket
+	local data = nil
+	if pk:isOk() then data = pk:get() end	--/ read from netpacket
+
+	if (wpn and data) then
+		local sec = wpn:section()
+		hud:add_msg("Weapon",sec)
+		hud:add_msg("Visual",data.visual_name)
+		hud:add_msg("Visual Flag",data.visual_flags)
+		local ef_main_weapon_type = avo_utils.read_from_ini(nil,sec,"ef_main_weapon_type","string","nil")
+		hud:add_msg("ef_main_weapon_type",ef_main_weapon_type)
+		local ef_weapon_type = avo_utils.read_from_ini(nil,sec,"ef_weapon_type","string","nil")
+		hud:add_msg("ef_weapon_type",ef_weapon_type)
+		hud:add_msg("Condition",data.condition and math.floor(data.condition*100))
+		hud:add_msg("Upgrades",data.upgrades)
+		hud:add_msg("Weapon State",data.weapon_state)
+		hud:add_msg("AmmoCurrent",data.ammo_current)
+		hud:add_msg("AmmoClip",data.ammo_elapsed)
+		hud:add_msg("AddonFlag",data.addon_flags)
+		hud:add_msg("AmmoType",data.ammo_type)
+		hud:add_msg("XZ1",data.xz1)
+	end
+
+	hud:set_header("-[Weapon Info]-")
+	hud:display()
+end
+--/----------------------------------------------------------------------------
+--/ Stalker data
+--/----------------------------------------------------------------------------
+local stalker_id
+local stalker_data = {}
+function stalker_data_hud_show(hud)
+	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	hud:set_header("-[Stalker Packet Data]-")
+	if (obj) then
+		if (stalker_id ~= obj:id()) then
+			stalker_id = obj:id()
+			local se_obj = alife():object(stalker_id)
+			avo_utils.switch_offline(se_obj.id)
+			local pk = get_netpk(se_obj)
+			if pk:isOk() then stalker_data = pk:get() end
+			avo_utils.switch_online(se_obj.id)
+		end
+		-- hud:add_msg("cse_alife_object:",'')
+		-- hud:add_msg("   Story ID",stalker_data.story_id)
+		-- hud:add_msg("   Spawn Story ID",stalker_data.spawn_story_id)
+		
+		
+		hud:add_msg("Character Name",stalker_data.checked_characters)
+		hud:add_msg("Spec Char",stalker_data.specific_character)
+		hud:add_msg("Profile",stalker_data.character_profile)
+		hud:add_msg("Money",stalker_data.money)
+		hud:add_msg("Community Index",stalker_data.community_index)
+		hud:add_msg("Reputation",stalker_data.reputation)
+		hud:add_msg("Rank",stalker_data.rank)
+		hud:add_msg("trader_unk2_u8",stalker_data.cse_alife_trader_abstract__unk2)
+		hud:add_msg("trader_unk3_u8",stalker_data.cse_alife_trader_abstract__unk3)
+		hud:add_msg("distance",stalker_data.distance)
+		hud:add_msg("direct_control",stalker_data.direct_control)
+		-- hud:add_msg("unk3_u32",stalker_data.cse_alife_object__unk3_u32)
+		hud:add_msg("Skeleton",stalker_data.skeleton_name)
+		hud:add_msg("Skel. Flag",stalker_data.skeleton_flag)
+		hud:add_msg("Source ID",stalker_data.source_id)
+		if type(stalker_data.custom_data) == "string" then
+			hud:add_msg("Custom Data",stalker_data.custom_data)
+		else
+			hud:add_msg("Custom Data",avo_table.hash_size(stalker_data.custom_data))
+			for k,v in pairs(stalker_data.custom_data) do
+				hud:add_msg("   %s:%s",k,v,'')
+			end
+		end
+		hud:add_msg("Visual",stalker_data.visual_name)
+		hud:add_msg("Vis. Flags",stalker_data.visual_flags)
+		hud:add_msg("team,squad,group",string.format("%d, %d, %d", stalker_data.g_team, stalker_data.g_squad, stalker_data.g_group))
+		
+		--[[
+		hud:add_msg("Out Rest.",#stalker_data.dynamic_out_restrictions)
+		for k,v in ipairs(stalker_data.dynamic_out_restrictions) do
+			hud:add_msg(k,v)
+		end
+		hud:add_msg("In Rest.",#stalker_data.dynamic_in_restrictions)
+		for k,v in ipairs(stalker_data.dynamic_in_restrictions) do
+			hud:add_msg(k,v)
+		end
+		--]]
+		
+		hud:add_msg("Equip. Pref.",#stalker_data.equipment_preferences)
+		for k,v in ipairs(stalker_data.equipment_preferences) do
+			hud:add_msg(k,v)
+		end
+		hud:add_msg("Weapon Pref.",#stalker_data.main_weapon_preferences)
+		for k,v in ipairs(stalker_data.main_weapon_preferences) do
+			hud:add_msg(k,v)
+		end
+		hud:add_msg("Out Rest.",stalker_data.base_out_restrictors)
+		hud:add_msg("In Rest.",stalker_data.base_in_restrictors)
+	end
 	hud:display()
 end
 
