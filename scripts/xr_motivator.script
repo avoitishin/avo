@@ -174,11 +174,16 @@ function motivator_binder:net_spawn(sobject)
 
 
 	self.object:group_throw_time_interval(2000)
+	
+	sm:call("stalker_net_spawn", self, sobject)
 
 	return true
 end
 
 function motivator_binder:net_destroy()
+
+	sm:call("stalker_net_destroy", self)
+
 	--printf("motivator_binder:net_destroy(): self.object:name()='%s'", self.object:name())
 	xrs_dyn_music.npc_table[self.object:id()] = nil
 
