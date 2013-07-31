@@ -615,7 +615,7 @@ function start_game_callback()
 	--test_object:test()
 	
 	----| aVo |--------------------------------------------------------------------
-	avo_controller._init()
+	avo_global._init()
 	----| end:aVo |----------------------------------------------------------------
 end
 
