@@ -9,7 +9,7 @@
 --/ Variables
 --/----------------------------------------------------------------------------
 local cfg_file = "avo\\avo_global.ltx"
-local sname = script_name()
+local self_name = script_name()
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/----------------------------------------------------------------------------
@@ -50,12 +50,12 @@ function _init()
 
 --/ protection for extending existing lua namespaces with new functions
 --/ (i.e. string.split etc)
-function ext_namespace(ns,name,fn)
+function ext_namespace(ns, name, fn)
 	if type(ns) ~= 'string' or type(name) ~= 'string' or type(fn) ~= 'function' then 
-		abort("Invalid parameter types passed to ext_namespace(string,string,function): %s, s%",type(ns),type(name),type(fn)) 
+		abort("Invalid parameter types passed to ext_namespace(string,string,function): %s, %s, %s", type(ns),type(name), type(fn)) 
 	end
 	if _G[ns][name] then 
-		abort("Function [%s] is already registered in [%s]",name,ns)
+		abort("Function [%s] is already registered in [%s]", name, ns)
 	else
 		_G[ns][name] = fn
 	end
@@ -64,7 +64,7 @@ end
 --/ initialize signals manager
 function init_signals()
   local sm = avo_signals.get_mgr()
-  if sm then _G["sm"] = sm else abort("(%s) falied to initialize signals manager", sname) end
+  if sm then _G["sm"] = sm else abort("(%s) falied to initialize signals manager", self_name) end
   _G["slot"] = avo_signals.slot
 end
 

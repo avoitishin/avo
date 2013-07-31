@@ -18,7 +18,7 @@ local str_clsid2class = {} --/ массив (строковый) соответствия 'script_clsid' <=
 local clsid2net       = {} --/ массив соответствий 'script_clsid' <=> 'net-class'
 local sim = nil
 
-local sModule = script_name() --/ строковое имя файла-модуля
+local self_name = script_name() --/ строковое имя файла-модуля
 --/ -----------------------------------------------------------------
 local bits_mode = { --/ table of admissible flags
 	[0] = 0, --/ change 'abstract' properties of packet
@@ -38,7 +38,7 @@ local convert_obj = function(obj)
 			return sim:object(obj:id()) --/> server_object
 		end
 	end
-	--abort(sModule..":convert_obj:<Error!>") --/ for debug
+	--abort(self_name..":convert_obj:<Error!>") --/ for debug
 end
 --/ -----------------------------------------------------------------------------------------------
 --/ GET: general (universal) call-function
@@ -53,9 +53,9 @@ get = function(obj, part_flags, packet)
 		local mode = bits_mode[part_flags or 3]
 		if bits_mode[mode] == 0 then --/ for 'abstract' part
 			return this.net_cse_abstract(sobj, part_flags, packet, net_class) --/> out: packet_manager for 'abstract' part
-		elseif net_class then  --log(sModule..":get:Obj=[%s],clsid=[%s]%s", sobj:name(), script_clsid, "") --/#~#
+		elseif net_class then  --log(self_name..":get:Obj=[%s],clsid=[%s]%s", sobj:name(), script_clsid, "") --/#~#
 			return net_class(sobj, mode) --/> out: packet_manager 'state'|'update'|'full' part(s)
-		end  --log(sModule..":get:Obj=[%s],clsid=[%s]~unknown:<%s>", sobj:name(), script_clsid, "Warning!") --/#~#
+		end  --log(self_name..":get:Obj=[%s],clsid=[%s]~unknown:<%s>", sobj:name(), script_clsid, "Warning!") --/#~#
 	end
 	return net_stub --/> (net_dummy class or stub)
 end
@@ -397,7 +397,7 @@ _r_l16u8v  = function(pk) return _r_chunk(pk,pk:r_u16(), 'u8'     ) end
 _r_l32u8v  = function(pk) return _r_chunk(pk,pk:r_s32(), 'u8'     ) end
 _r_l32u16v = function(pk) return _r_chunk(pk,pk:r_s32(), 'u16'    ) end
 -- _r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'stringZ') end
-_r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'sz') end
+_r_l32szv  = function(pk) return _r_chunk(pk,pk:r_s32(), 'sz') end --/ avo fix
 
 _w_q8v     = function(pk,tbl) _w_chunk(pk,tbl,'u8') end
 _w_q8v3    = _w_q8v
@@ -412,7 +412,7 @@ _w_l16u8v  = function(pk,tbl) pk:w_u16(#tbl) _w_chunk(pk,tbl,'u8'     ) end
 _w_l32u8v  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'u8'     ) end
 _w_l32u16v = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'u16'    ) end
 -- _w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'stringZ') end
-_w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'sz') end
+_w_l32szv  = function(pk,tbl) pk:w_s32(#tbl) _w_chunk(pk,tbl,'sz') end --/ avo fix
 --/ -------------------------
 _r_l8szbv = function(pk)
 	tbl = {}
@@ -594,7 +594,7 @@ _r_bCTime = function(pk,ver)
 		if not pk:r_eof() then
 			return _r_uCTime(pk,ver) --/>
 		end
-		--log(sModule..":_r_bCTime:flg=[%s]~wrong:<%s>", iFlg, "Warning!") --/#~#
+		--log(self_name..":_r_bCTime:flg=[%s]~wrong:<%s>", iFlg, "Warning!") --/#~#
 	end
 	return iFlg --/> #?#
 end
@@ -1346,7 +1346,7 @@ function net_base:get_pk2str()
 end
 function net_base:print()
 	if self.obj and self._mode ~= 0 and table.print then
-		table.print(self:get(),sModule..":NetPacket|"..self.obj:name())
+		table.print(self:get(),self_name..":NetPacket|"..self.obj:name())
 	end
 end
 --/ -----------------------------------------------------------------
@@ -1441,7 +1441,7 @@ local execute_switchings = function()
 				end
 			end
 			if not can_switch or v.cnt > 48 then --/ if limit is exceeded -> clear:
-				if v and v.cnt > 32 then log("%s:execute_switchings:obj=[%s/%s]:cnt(%s):flag(%s)=>online(%s):<%s>", sModule, sobj and sobj:name(), id, v.cnt, v.off, sobj and sobj.online, "Warning!") end --/#~#
+				if v and v.cnt > 32 then log("%s:execute_switchings:obj=[%s/%s]:cnt(%s):flag(%s)=>online(%s):<%s>", self_name, sobj and sobj:name(), id, v.cnt, v.off, sobj and sobj.online, "Warning!") end --/#~#
 				tbl_switchings[id] = nil
 			end
 		end
@@ -1649,7 +1649,7 @@ end
 
 function net_cse_abstract:print()
 	if self.obj and self.pk and table.print then
-		table.print(self:get(),sModule..":NetPacket(abstract)|"..self.obj:name())
+		table.print(self:get(),self_name..":NetPacket(abstract)|"..self.obj:name())
 	end
 end
 --/ read from game_object's reader
@@ -3126,7 +3126,7 @@ function build_tables(ini)
 	--/ читаем конфиг-файл модуля
 	local ltx = ini_file("avo\\avo_netpk.ltx") --/ объект конфиг-файла (из папки мода)
 	if not ltx:section_exist("clsid_to_class") then
-		ltx = ini_file(sModule..".ltx") --/ проверяем в корневой папке конфиг-файлов
+		ltx = ini_file(self_name..".ltx") --/ проверяем в корневой папке конфиг-файлов
 	end
 	if ltx:section_exist("clsid_to_class") then
 		--/ установка параметров (режимов) работы модуля
@@ -3166,7 +3166,7 @@ function build_tables(ini)
 		--if clsid ~= nil then get_clsid2net() end
 	end
 	if not next(str_clsid2class) then
-		abort(sModule..":build_tables:Error_read_config_file") --/ ошибка чтения конфиг-файла
+		abort(self_name..":build_tables:Error_read_config_file") --/ ошибка чтения конфиг-файла
 	end
 end
 
