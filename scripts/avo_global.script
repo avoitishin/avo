@@ -1,0 +1,117 @@
+--[[-- INFO -------------------------------------------------------------------
+	File				: avo_global
+	Description	: Global functions
+	Credits			: aVo
+	Revision		: 0.1
+	Change Date	: 07.30.2013
+--]] --------------------------------------------------------------------------
+--/----------------------------------------------------------------------------
+--/ Variables
+--/----------------------------------------------------------------------------
+local cfg_file = "avo\\avo_global.ltx"
+local sname = script_name()
+--/----------------------------------------------------------------------------
+--/ Initialization
+--/----------------------------------------------------------------------------
+function _init()
+	_G["abort"] = this.abort
+	_G["ASSERT"] = this.ASSERT
+	_G["fn_empty"] = this.fn_empty
+	_G["read_ini"] = this.read_ini
+	_G["ext_namespace"] = this.ext_namespace --/ protection against override lua functions
+	
+	avo_lua._init() --/ initialize lua extensions here
+	
+	local ini = ini_file(cfg_file)
+	local dlog_on = read_ini(ini,"logging","debug","bool",false)
+	local elog_on = read_ini(ini,"logging","error","bool",false)
+	local wlog_on = read_ini(ini,"logging","warning","bool",false)
+	local vlog_on = read_ini(ini,"logging","visual","bool",false)
+	local printf_on = read_ini(ini,"logging","printf","bool",false)
+	
+	if dlog_on then _G["dlog"] = avo_log.dlog else _G["dlog"] = this.fn_empty end
+	if elog_on then _G["elog"] = avo_log.elog else _G["elog"] = this.fn_empty end
+	if wlog_on then _G["wlog"] = avo_log.wlog else _G["wlog"] = this.fn_empty end
+	if vlog_on then _G["vlog"] = avo_log.vlog else _G["vlog"] = this.fn_empty end
+	if printf_on then _G["printf"] = avo_log.printf else _G["printf"] = this.fn_empty end
+	ini = nil --/ help gc
+	
+	this.init_signals() --/ initialize signals manager here
+	
+end
+
+--/ extend existing namespace with new functions
+--/ (i.e. string.split etc)
+function ext_namespace(ns,name,fn)
+	if type(ns) ~= 'string' or type(name) ~= 'string' or type(fn) ~= 'function' then 
+		abort("Invalid parameter types passed to ext_namespace(string,string,function): %s, s%",type(ns),type(name),type(fn)) 
+	end
+	if _G[ns][name] then 
+		abort("Function [%s] is already registered in [%s]",name,ns)
+	else
+		_G[ns][name] = fn
+	end
+end
+
+--/ initialize signals manager
+function init_signals()
+  local sm = avo_signals.get_mgr()
+  if sm then _G["sm"] = sm else abort("(%s) falied to initialize signals manager", sname) end
+  _G["slot"] = avo_signals.slot
+end
+
+--/ abort game and log error details
+function abort(msg,...)
+	avo_log.log("[ABORT] "..avo_log.dbg_format(msg, ...))
+	avo_log.log(table.concat(callstack(), '\n'))
+  avo_log.flush()
+  local fail = avo_abort_game/0
+end
+
+--/ game specific assert. will crash game if cond is false
+function ASSERT(cond, msg)
+	if not cond then
+    abort(msg)
+  end
+end
+
+--/ read from config file
+function read_ini(ini,section,line,var_type,default)
+	if not (ini) then
+		ini = system_ini()
+	end
+
+	if (section and line and ini:section_exist(section) and ini:line_exist(section,line)) then
+		if (var_type == "bool") then
+			return ini:r_bool(section,line)
+		elseif (var_type == "string") then
+			return ini:r_string(section,line)
+		elseif (var_type == "float") then
+			return ini:r_float(section,line)
+		else
+			return ini:r_string_wq(section,line)
+		end
+	else
+		return default
+	end
+end
+
+--/ build debug callstack. dependent on luacap debug functions
+function callstack()
+	local	t = {}
+	if debug then
+		t = avo_string.split(debug.traceback(), '\n', true)
+		for k,v in pairs(t) do
+			if string.match(v, "stack traceback") then 
+				next(t)
+			else
+				t[k] = string.format("[%d] %s", k-1, string.gsub(string.gsub(v, ".+\\", ""), ">", ""))
+			end
+		end
+	end
+	return t
+end
+
+--/ empty function used as plug
+function fn_empty(...)
+end
