@@ -14,10 +14,10 @@ local sname = script_name()
 --/ Initialization
 --/----------------------------------------------------------------------------
 function _init()
-	_G["abort"] = this.abort
-	_G["ASSERT"] = this.ASSERT
-	_G["fn_empty"] = this.fn_empty
-	_G["read_ini"] = this.read_ini
+	_G["abort"] = this.abort	--/ crash game
+	_G["ASSERT"] = this.ASSERT --/ game specific assert
+	_G["fn_empty"] = this.fn_empty --/ empty function
+	_G["read_ini"] = this.read_ini	--/ read from config file
 	_G["ext_namespace"] = this.ext_namespace --/ protection against override lua functions
 	
 	avo_lua._init() --/ initialize lua extensions here
@@ -37,10 +37,10 @@ function _init()
 	ini = nil --/ help gc
 	
 	this.init_signals() --/ initialize signals manager here
-	
-end
 
---/ extend existing namespace with new functions
+	end
+
+--/ protection for extending existing lua namespaces with new functions
 --/ (i.e. string.split etc)
 function ext_namespace(ns,name,fn)
 	if type(ns) ~= 'string' or type(name) ~= 'string' or type(fn) ~= 'function' then 
@@ -100,7 +100,7 @@ end
 function callstack()
 	local	t = {}
 	if debug then
-		t = avo_string.split(debug.traceback(), '\n', true)
+		t = avo_lua.split(debug.traceback(), '\n', true)
 		for k,v in pairs(t) do
 			if string.match(v, "stack traceback") then 
 				next(t)
