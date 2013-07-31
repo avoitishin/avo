@@ -16,7 +16,7 @@ local enabled_debug        = false --/ включен режим отладки ...
 local is_initialized       = false --/ флаг инициализации модуля
 local str_clsid2class = {} --/ массив (строковый) соответствия 'script_clsid' <=> 'server_object_class'
 local clsid2net       = {} --/ массив соответствий 'script_clsid' <=> 'net-class'
-local sim = alife() --/ cache function
+local sim = nil
 
 local sModule = script_name() --/ строковое имя файла-модуля
 --/ -----------------------------------------------------------------
@@ -62,11 +62,11 @@ end
 --/ -----------------------------------------------------------------
 --/ Initialize module
 --/ -----------------------------------------------------------------
-function _init(ini)
+function _init()
 	if is_initialized then return end --/>
 	is_initialized = true
 	sim = alife()
-	this.build_tables(ini) --/ read config-file
+	this.build_tables() --/ read config-file
 	this.translate_funcs()
 end
 --/ -----------------------------------------------------------------
@@ -3124,7 +3124,7 @@ function net_dummy:print() end
 --/------------------------------------------------------------------------------------------------
 function build_tables(ini)
 	--/ читаем конфиг-файл модуля
-	local ltx = ini --ini_file("mods\\"..sModule..".ltx") --/ объект конфиг-файла (из папки мода)
+	local ltx = ini_file("avo\\avo_netpk.ltx") --/ объект конфиг-файла (из папки мода)
 	if not ltx:section_exist("clsid_to_class") then
 		ltx = ini_file(sModule..".ltx") --/ проверяем в корневой папке конфиг-файлов
 	end

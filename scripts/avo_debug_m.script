@@ -824,6 +824,10 @@ function on_actor_on_key(key)
 		else
 			toggle_right_key = 1
 		end
+	elseif prev_key == keybind_shift_key and key == DIK_keys.DIK_INSERT then
+		for k,v in pairs(_G) do
+			wlog(tostring(k))
+		end
 	end
 	prev_key = key
 end

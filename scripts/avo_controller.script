@@ -8,13 +8,11 @@
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
-local sname = script_name() --/ script name
-
+local self_name = script_name() --/ script name
+local debug_on = false --/ enable-disable in config not here
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/----------------------------------------------------------------------------
 function _init()
-	avo_global._init() --/ initialize global functions
-	-- avo_lua_utils._init()
-	-- avo_log._init()
+	dlog("in %s", self_name)
 end

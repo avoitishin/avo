@@ -37,6 +37,14 @@ function _init()
 	ini = nil --/ help gc
 	
 	this.init_signals() --/ initialize signals manager here
+	
+	avo_netpk._init() --/ initialize netpacket manager here
+	
+	--/ initialize storage here
+	
+	--/ initialize timers here
+	
+	avo_controller._init() --/ initialize controller as last step
 
 	end
 
