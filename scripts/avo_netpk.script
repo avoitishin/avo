@@ -3262,6 +3262,6 @@ function translate_funcs()
 	_G.torch_flags.NightVisionActive = 2
 	_G.torch_flags.Unknown           = 4
 	--/ translate (change) function to global scope
-	_G.get_netpk = get
+	-- _G.get_netpk = get --/ avo: moved to avo_global
 end
 --/ -----------------------------------------------------------------------------------------------
