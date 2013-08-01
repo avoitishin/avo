@@ -19,6 +19,8 @@ local primary_objects_filled = false
 class "actor_binder" (object_binder)
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:__init (obj) super(obj)
+	sm:call("actor_init_before_all", self)
+	
 	self.bCheckStart = false
 	self.weather_manager = level_weathers.get_weather_manager()
 	self.surge_manager = surge_manager.get_surge_manager()
