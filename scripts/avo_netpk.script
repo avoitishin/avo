@@ -501,12 +501,10 @@ end
 --/ prop.type: custom data:: packed binary string - look perl's or php's pack function format
 --/ -------------------------
 _r_cd = function(pk)
-	local data = pk:r_stringZ()
 	if not disabled_convert_cd then
-		data = custom_data(data)
-		return data:getTable() --/> to helpers
+		return custom_data(pk:r_stringZ()) --/> to helpers
 	end
-	return data --/> 'string'
+	return pk:r_stringZ() --/> 'string'
 end
 _w_cd = function(pk,val)
 	if not disabled_convert_cd then

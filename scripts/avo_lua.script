@@ -121,7 +121,7 @@ end
 --/ return number of key-value pairs in a table
 function size(tbl)
 	num = 0
-	for k,v in pairs(tbl) do
+	for _,_ in pairs(tbl or {}) do
     num = num + 1
 	end
 	return num
