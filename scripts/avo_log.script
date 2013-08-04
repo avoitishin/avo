@@ -10,13 +10,21 @@
 --/ xray extensions replacement for non-functional log
 --/----------------------------------------------------------------------------
 function log(msg, ...)
-  if log1 then log1(msg, ...) end
+  if log1 then 
+		log1(msg)
+	else
+		get_console():execute("load ~:"..msg)
+	end
 end
 --/----------------------------------------------------------------------------
 --/ xray extensions replacement for non-functional flush
 --/----------------------------------------------------------------------------
 function flush()
-  if flush1 then flush1() end
+  if flush1 then 
+		flush1()
+	else
+		get_console():execute('flush')
+	end
 end
 --/----------------------------------------------------------------------------
 --/ Add debug information (script name, current line) if available
