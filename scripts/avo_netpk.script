@@ -1181,6 +1181,8 @@ function net_base:get()
 		stpk:r_seek(2) --/ installation of the beginning (+2) of reading
 		stsz = stpk:r_tell()
 	end
+	-- wlog("[net_base:get()] self.name = %s | self.obj:name() = %s | stpk:w_tell = %s | stpk:r_tell = %s", self.name, self.obj:name(), stpk:w_tell(), stpk:r_tell())
+	-- dlog("net_base:get:(%s):(%s):m(%s)/st(%s)/up(%s):[%s]", self.obj:name(), self.name, self._mode, self._can_st, self._can_up, ">")
 	if bit_and(self._mode, 2) ~= 0 then
 		uppk = net_packet()
 		uppk:w_begin(0) --/ installation in the package beginning (+2)
@@ -1214,6 +1216,7 @@ function net_base:get()
 			if true or self.dbg then log("net_base:get:obj=[%s]:(%s):mode=[%s]:tail(up)=[%s]:<%s>", self.obj:name(), self.name, self._mode, t.upd.__tail_size, "Info!") end --/#~#
 		end
 	end
+	-- dlog("(%s) net_base:get() succes, return size = %s", self_name, table.size(t))
 	return t --/>
 end
 --/ Set -----------
@@ -1360,7 +1363,7 @@ function tail_data:get_pk()
 	self.pk = net_packet()
 	self.pk:w_begin(0) --/ installation in the package beginning (+2)
 	self.pk:r_seek(0) --/ installation of the beginning of reading
-	return self --/> blank packet
+	return self.pk --/> blank packet
 end
 
 function tail_data:peekFrom(src_packet)
