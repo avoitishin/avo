@@ -126,5 +126,5 @@ function register(object_factory)
 	s_register	(object_factory, 											"sim_squad_scripted.sim_squad_scripted",			"ON_OFF_S",				"online_offline_group_s")
 	
 	-- CUSTOM --------------------------------------------------------------------------------------------------------------
-	cs_register	(object_factory, "CGameObject", 			"avo_base_storage.se_custom_storage", 				"CUST_ST", 				"custom_storage")
+	cs_register	(object_factory, "CGameObject", 			"avo_storage.se_custom_storage", 				"CUST_ST", 				"custom_storage")
 end
