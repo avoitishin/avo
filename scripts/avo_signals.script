@@ -35,7 +35,7 @@ function signals_mgr:__init()
 	level.add_call(hanged_calls_check, function()end) --/ сторожевой таймер
 end
 --/----------------------------------------------------------------------------
---/ check if two slots are identical
+--/ check if two slots are identical (rawequal is in xray extensions)
 --/----------------------------------------------------------------------------
 local function slots_equal(slot1, slot2)
 	return 
@@ -83,7 +83,7 @@ function signals_mgr:unsubscribe(slot_to_unsubscribe)
 		self.to_unsubscribe[slot_to_unsubscribe.signal] = 
 		self.to_unsubscribe[slot_to_unsubscribe.signal] or {}
 		table.insert(self.to_unsubscribe[slot_to_unsubscribe.signal], slot_to_unsubscribe)
-		slot_to_unsubscribe.unsubscribed = true --/ маркируем его, чтобы игнорировался при вызовах
+		slot_to_unsubscribe.unsubscribed = true -- маркируем его, чтобы игнорировался при вызовах
 	else
 		--/ нет незавершённых вызовов, просто удаляем слот
 		local slots = self.signals[slot_to_unsubscribe.signal]
@@ -129,7 +129,7 @@ function signals_mgr:call(signal_name, ...)
 				else
 					result = slot.fun(...)
 				end
-				if result then break end --/ вызов заявил (функция вернула true), что он финальный в цепочке вызовов
+				if result then break end -- вызов заявил (функция вернула true), что он финальный в цепочке вызовов
 			end
 		end
 	--/ now all timed slots are evaluated and triggered
@@ -146,7 +146,7 @@ function signals_mgr:call(signal_name, ...)
 					end
 					slot.last_call = time_global()
 				end
-				if result then break end --/ вызов заявил (функция вернула true), что он финальный в цепочке вызовов
+				if result then break end -- вызов заявил (функция вернула true), что он финальный в цепочке вызовов
 			end
 		end
 		self.unfinished_count = self.unfinished_count - 1
@@ -172,13 +172,13 @@ end
 --/ dump subscribed slots and signals for print
 --/----------------------------------------------------------------------------
 function signals_mgr:dump()
-	local t = avo_table.clone(self.signals)
+	local t = table.clone(self.signals)
 	if not debug then return t end --/ can only do it with debug enabled
 	for k,v in pairs(t) do --/ signals
 		for c, d in pairs(v) do	--/ normal, timed
 			for a,b in pairs(d) do	-- slots
 				local dbg = debug.getinfo(b.fun)
-				t[k][c][a] = avo_string.get_filename(dbg.short_src)
+				t[k][c][a] = string.get_filename(dbg.short_src)
 			end
 		end
 	end
