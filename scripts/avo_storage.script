@@ -28,7 +28,7 @@ local sModule = script_name() --/ string name of the file module
 --/ -----------------------------------------------------------------
 --/ Print-Log: (output of the debug information)
 --/ -----------------------------------------------------------------
-local log = function(fmt, ...) _G.log(sModule..":"..tostring(fmt), ...) end
+local log = function(fmt, ...) dlog(sModule..":"..tostring(fmt), ...) end
 --/ -----------------------------------------------------------------
 --/ ---------------------------------------------
 --/ create: создание нового stor-объекта для сохранения данных
@@ -93,7 +93,9 @@ end
 local function save_storehouse(e)
 --	log("save_storehouse:Size=[%s/%s]:[%s]", table.size(db.storehouse), next(db.storehouse), ">") --/#~#
 	local stor_elm = create_storage_element() --/ new stor-объект
+	dlog("TYPE = %s", type(stor_elm))
 	local pk = stor_elm.tail_pk
+	dlog("TYPE = %s", type(pk))
 	local cnt_len = 0 --/ счетчик limit'а (текущее кол-во байт для записи в stor-объект)
 	local cnt_elm,cnt_bytes = 1,0 --/ счетчики кол-ва элементов хранилища и записанных в них байт (for statistic)
 	local marker,err,len = nil,nil,0
@@ -202,9 +204,9 @@ local function save_storehouse(e)
 	db.storehouse["BuildSav"] = db.iBuildMod --/ restore
 	--/ on after saving... (опционально):
 	set_clear_callback() --/ set callback if game continie
-	to_log( string.rep("~",64) ) --/#~#
+	dlog( string.rep("~",64) ) --/#~#
 	_G.log("Save Storehouse: Size(%s)=[%s], keys=[%s] : BuildSav=[%s]%s", cnt_elm, cnt_bytes, table.size(db.storehouse), db.iBuildMod, "") --/#~#
-	to_log( string.rep("~",64) ) --/#~#
+	dlog( string.rep("~",64) ) --/#~#
 end
 --/ -----------------------------------------------------------------
 --/ read: чтение данных из нет-пакета в хранилище (from 'se_custom_storage')
@@ -242,7 +244,7 @@ local function read_tail_packet(pk, iBuild)
 			elseif marker ~= 0 then --/ lua_type == 'string'|'table'
 				val = pk:r_stringZ()
 				if marker == 4 then --/ lua_type == 'table'
-					val = table.decompress(val)
+					val = table.uncompress(val)
 				end
 				db.storehouse[key] = val
 			end
@@ -253,15 +255,15 @@ local function read_tail_packet(pk, iBuild)
 	iCntBites = iCntBites + pk:r_tell() -2 --/ текущее кол-во считанных байт в хранилище
 	if db.storehouse["CStorages"] ~= nil then --/ загружен заключительный stor-элемент?
 		db.storehouse["BuildSav"] = iBuild --/ метка 'даты-версии' сэйва игры (опционально)
-		to_log( string.rep("~",64) ) --/#~#
-		_G.log("Load Storehouse: Size(%s)=[%s], keys=[%s] :BuildSav=[%s]%s", GetVar("CStorages"), iCntBites, table.size(db.storehouse), iBuild, "") --/#~#
-		to_log( string.rep("~",64) ) --/#~#
+		dlog( string.rep("~",64) ) --/#~#
+		-- _G.log("Load Storehouse: Size(%s)=[%s], keys=[%s] :BuildSav=[%s]%s", GetVar("CStorages"), iCntBites, table.size(db.storehouse), iBuild, "") --/#~#
+		dlog( string.rep("~",64) ) --/#~#
 		db.storehouse["CStorages"] = nil --/ удаляем метку
 		set_clear_callback() --/ устанавливаем коллбэк на очистку (при появлении актора в игре)
 		if event then --/#+# опционально: генерируем сигнал события: 'разрешено чтение из хранилища'
 			event("storage_present"):trigger() --/ для чтения данных из общей таблицы db.storehouse
 		end
-	elseif db.is_dbg0 then to_log(sModule..":read_tail_packet: size=["..tostring(iCntBites).."]") --/#~#
+	elseif db.is_dbg0 then dlog(sModule..":read_tail_packet: size=["..tostring(iCntBites).."]") --/#~#
 	end
 end
 --/ -----------------------------------------------------------------------------------------------
@@ -271,31 +273,34 @@ end
 --/ Initialize Module
 --/ -----------------------------------------------------------------
 function init()
-	if not bInit and event then --/ если доступна 'сигнальная система событий':
-		event("actor_load_ext"):register(load) --/ подписка на событие для чтения данных из сэйва (опционально)
-		event("actor_save_ext"):register(save) --/ подписка на событие для сохранения данных в сэйв
-	end
+	db.iBuildMod = 777
+	slot("actor_load", this.load)
+	slot("actor_save", this.save)
+	-- if not bInit and event then --/ если доступна 'сигнальная система событий':
+		-- event("actor_load_ext"):register(load) --/ подписка на событие для чтения данных из сэйва (опционально)
+		-- event("actor_save_ext"):register(save) --/ подписка на событие для сохранения данных в сэйв
+	-- end
 	bInit = true --/ флаг выполненной инициализации модуля
 end
 --/ -----------------------------------------------------------------
 --/ SAVE: вызов сохранения хранилища (from 'actor_binder:save')
 --/ -----------------------------------------------------------------
-function save(e) --/< from 'actor_saved'
-	clearing(e) --/ clear: remove stor-elements after previous save (подстраховка)
-	if e then --/#+# опционально: генерируем сигнал события: 'запись в хранилище'
-		e:note("storage_save:>") --/#~# for debug
-		event("storage_save"):trigger({func = save_chunk}) --/ для сохранения локальных данных в общую таблицу db.storehouse
-	end
-	save_storehouse(e) --/ saving db.storehouse
+function save() --/< from 'actor_saved'
+	clearing() --/ clear: remove stor-elements after previous save (подстраховка)
+	-- if e then --/#+# опционально: генерируем сигнал события: 'запись в хранилище'
+		-- e:note("storage_save:>") --/#~# for debug
+		-- event("storage_save"):trigger({func = save_chunk}) --/ для сохранения локальных данных в общую таблицу db.storehouse
+	-- end
+	save_storehouse() --/ saving db.storehouse
 end
 --/ -----------------------------------------------------------------
 --/ LOAD: вызов чтения хранилища внешними модулями (from 'actor_binder:load')
 --/ -----------------------------------------------------------------
-function load(e) --/< from 'actor_loaded'
-	if e then --/ генерируем сигнал события: 'чтение из хранилища' внешними модулями
+function load() --/< from 'actor_loaded'
+	--[[ e then --/ генерируем сигнал события: 'чтение из хранилища' внешними модулями
 		e:note("storage_load:>") --/#~# for debug
 		event("storage_load"):trigger({func = function(name) return type(name) == 'string' and tPkChunks[name] end})
-	end
+	end]]
 	tPkChunks = {} --/ clear
 end
 --/ -----------------------------------------------------------------
