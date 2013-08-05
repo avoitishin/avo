@@ -39,7 +39,7 @@ function dbg_format(...)
 	local info_table = debug.getinfo(stack_depth)
 	if not info_table then return avo_lua.format_ext(unpack(arg)) end
 	local script = string.get_filename(info_table.short_src)
-	return avo_lua.format_ext("(%s:%d) %s", script, info_table.currentline, avo_lua.format_ext(unpack(arg)))
+	return string.format("(%s:%d) %s", script, info_table.currentline, avo_lua.format_ext(unpack(arg)))
 end
 --/----------------------------------------------------------------------------
 --/ Error log
