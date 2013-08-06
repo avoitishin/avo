@@ -2,17 +2,42 @@
 	File				: avo_controller
 	Description	: Mod orchestration script
 	Credits			: aVo, Alundaio
-	Revision		: 2.0
-	Change Date	: 07.30.2013 complete redesign
+	Revision		: 2.1
+	Change Date	: 08.05.2013 complete redesign
 --]] --------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
-local self_name = script_name() --/ script name
-local debug_on = false --/ enable-disable in config not here
+local self_name = script_name() -- script name
+local debug_on = false -- enable-disable in config not here
+
+local start = os.time() -- benchmark
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/----------------------------------------------------------------------------
 function _init()
-	dlog("in %s", self_name)
+	init_actor_slots() -- subscribe to actor_binder signals
+end
+
+function init_actor_slots()
+	slot("actor_set_callbacks", this.set_actor_callbacks)
+	slot("actor_remove_callbacks", this.remove_actor_callbacks)
+end
+
+function set_actor_callbacks(actor_binder)
+	actor_binder.object:set_callback(callback.hit, this.on_actor_hit, actor_binder)
+	actor_binder.object:set_callback(123, this.on_key_press, actor_binder) -- key press
+end
+
+function remove_actor_callbacks(actor_binder)
+	actor_binder.object:set_callback(callback.hit, nil)
+	actor_binder.object:set_callback(123, nil) -- key press
+end
+
+function on_actor_hit(obj, amount, local_direction, who, bone_index)
+	sm:call("actor_hit", obj, amount, local_direction, who, bone_index)
+end
+
+function on_key_press(key)
+	sm:call("actor_key_press", key)
 end
