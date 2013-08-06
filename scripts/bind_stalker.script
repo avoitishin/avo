@@ -95,8 +95,7 @@ function actor_binder:net_destroy()
 	self.object:set_callback(callback.take_item_from_box, nil)
 	self.object:set_callback(callback.use_object, nil)
 	
-	self.object:set_callback(callback.hit, nil)
-	self.object:set_callback(123, nil)
+	sm:call("actor_remove_callbacks", self)
 
 	log("--------->"..tostring(_G.amb_vol))
 	log("--------->"..tostring(_G.mus_vol))
@@ -131,20 +130,8 @@ function actor_binder:reinit()
 	self.object:set_callback(callback.task_state, self.task_callback, self)
 	self.object:set_callback(callback.take_item_from_box, self.take_item_from_box, self)
 	self.object:set_callback(callback.use_object, self.use_inventory_item, self)
+	sm:call("actor_set_callbacks", self)
 	
-	self.object:set_callback(callback.hit, self.hit_callback, self)
-	self.object:set_callback(123, self.on_key, self)
-	sm:call("actor_reinit")
-	
-end
-----------------------------------------------------------------------------------------------------------------------
-function actor_binder:hit_callback(obj, amount, local_direction, who, bone_index)
-	sm:call("actor_hit_callback", obj, amount, local_direction, who, bone_index)
-end
-
-function actor_binder:on_key(key)
-	-- avo_log.dlog("actor_binder:on_key "..key.." "..dik_to_bind(key))
-	sm:call("actor_on_key", key)
 end
 --------------------------------------------------------------------------------------------------------
 function actor_binder:take_item_from_box(box, item)
