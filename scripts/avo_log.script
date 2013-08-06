@@ -31,15 +31,22 @@ end
 --/----------------------------------------------------------------------------
 function dbg_format(...)
 	local arg = {...}
-	local stack_depth = 3 --/ default stack depth
-	if type(arg[1]) == 'number' then --/ stack depth override
-		stack_depth = table.remove(arg, 1) --/ shift first value
+	if #arg == 0 then return '<<zero string>>' end
+	local stack_depth = 3 -- default stack depth
+	if type(arg[1]) == 'number' and #arg > 1 then -- stack depth override
+		stack_depth = table.remove(arg, 1) -- shift first value
 	end
-	if debug == nil then return avo_lua.format_ext(unpack(arg)) end --/ debug not available
+	if debug == nil then return avo_lua.format_ext(unpack(arg)) end -- debug not available
+	if type(arg[1]) == 'string' then
+		local fn_name = string.match(arg[1], '^%(.-:(.*)%)') or '' -- save function name
+		arg[1] = string.gsub(arg[1],'^%(.*%)', fn_name) -- remove script name when debug is on (already part of trace info_table)
+	-- else
+		-- return 'dbg_format: cannot format passed expression'
+	end
 	local info_table = debug.getinfo(stack_depth)
 	if not info_table then return avo_lua.format_ext(unpack(arg)) end
 	local script = string.get_filename(info_table.short_src)
-	return string.format("(%s:%d) %s", script, info_table.currentline, avo_lua.format_ext(unpack(arg)))
+	return string.format("(%s:%d) %s", script, info_table.currentline, avo_lua.format_ext(unpack(arg))) -- dependent on avo_lua
 end
 --/----------------------------------------------------------------------------
 --/ Error log
