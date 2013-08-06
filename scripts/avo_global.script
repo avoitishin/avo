@@ -2,27 +2,35 @@
 	File				: avo_global
 	Description	: Global functions
 	Credits			: aVo
-	Revision		: 0.1
-	Change Date	: 07.30.2013
+	Revision		: 1.0
+	Change Date	: 08.05.2013
 --]] --------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
 local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
+
 --/----------------------------------------------------------------------------
 --/ Initialization
+--/ Note: some global constants and flags are registered in avo_netpk
 --/----------------------------------------------------------------------------
 function _init()
-	_G["abort"] = this.abort	--/ crash game
-	_G["ASSERT"] = this.ASSERT --/ game specific assert
-	_G["fn_empty"] = this.fn_empty --/ empty function
-	_G["read_ini"] = this.read_ini	--/ read from config file
-	_G["ext_namespace"] = this.ext_namespace --/ protection against override lua functions
+	local start = os.clock() -- benchmark
+	local ini = ini_file(cfg_file)
+	
+	local lua_debug_on = read_ini(ini,"debug","lua_debug","bool",false)
+	if lua_debug_on then require('RvP') end -- turn on lua debug (requires bin\RvP.dll)
+
+	_G["abort"] = this.abort	-- crash game
+	_G["ASSERT"] = this.ASSERT -- game specific assert
+	_G["fn_empty"] = this.fn_empty -- empty function
+	_G["read_ini"] = this.read_ini	-- read from config file
+	_G["ext_namespace"] = this.ext_namespace -- protection against overriding lua functions
 	
 	avo_lua._init() --/ initialize lua extensions here
 	
-	local ini = ini_file(cfg_file)
+	
 	local dlog_on = read_ini(ini,"logging","debug","bool",false)
 	local elog_on = read_ini(ini,"logging","error","bool",false)
 	local wlog_on = read_ini(ini,"logging","warning","bool",false)
@@ -34,19 +42,26 @@ function _init()
 	if wlog_on then _G["wlog"] = avo_log.wlog else _G["wlog"] = this.fn_empty end
 	if vlog_on then _G["vlog"] = avo_log.vlog else _G["vlog"] = this.fn_empty end
 	if printf_on then _G["printf"] = avo_log.printf else _G["printf"] = this.fn_empty end
-	ini = nil --/ help gc
 	
-	this.init_signals() --/ initialize signals manager here
+	ini = nil -- help gc
 	
-	avo_netpk._init() --/ initialize netpacket manager here
+	this.init_signals() -- initialize signals manager
 	
-	--/ initialize storage here
+	avo_netpk._init() -- initialize netpacket manager
+	_G["get_netpk"] = avo_netpk.get
+	
+	avo_storage._init()	-- initialize storage (db.avo) manager 
+	_G["set_var"] = avo_storage.set
+	_G["get_var"] = avo_storage.get
 	
 	--/ initialize timers here
 	
 	avo_controller._init() --/ initialize controller as last step
-
-	end
+	
+	avo_log.log(string.format("----| AVO FRAMEWORK LOADED (in %.3f seconds) |----", os.clock() - start))
+	
+	collectgarbage()
+end
 
 --/ protection for extending existing lua namespaces with new functions
 --/ (i.e. string.split etc)
@@ -70,10 +85,36 @@ end
 
 --/ abort game and log error details
 function abort(msg,...)
-	avo_log.log("[ABORT] "..avo_log.dbg_format(msg, ...))
-	avo_log.log(table.concat(callstack(), '\n'))
-  avo_log.flush()
-  local fail = avo_abort_game/0
+	local function log(msg, ...)
+		if log1 then
+			log1("[ABORT] "..string.format(msg, ...))
+		else
+			get_console():execute("load ~:[ABORT] "..string.format(msg, ...))
+		end
+	end
+	local function flush()
+		if flush1 then
+			flush1()
+		else
+			get_console():execute('flush')
+		end
+	end
+	local function callstack()
+		local	dbg_stack = avo_lua.split(debug.traceback(), '\n', true) -- dependent on avo_lua
+		table.remove(dbg_stack, 2) -- remove callstack
+		table.remove(dbg_stack, 2) -- remove abort
+		for k,v in pairs(dbg_stack) do
+			if string.match(v, "stack traceback") then next(dbg_stack)
+			else dbg_stack[k] = string.format("[%d] %s", k-1, string.gsub(string.gsub(v, ".+\\", ""), ">", ""))
+			end
+		end
+		return dbg_stack
+	end
+	log(msg, ...)
+	if debug then log(table.concat(callstack(), '\n')) end
+  flush()
+	os.exit(666)
+  -- local fail = avo_abort_game/0
 end
 
 --/ game specific assert. will crash game if cond is false
@@ -88,7 +129,6 @@ function read_ini(ini,section,line,var_type,default)
 	if not (ini) then
 		ini = system_ini()
 	end
-
 	if (section and line and ini:section_exist(section) and ini:line_exist(section,line)) then
 		if (var_type == "bool") then
 			return ini:r_bool(section,line)
@@ -102,22 +142,6 @@ function read_ini(ini,section,line,var_type,default)
 	else
 		return default
 	end
-end
-
---/ build debug callstack. dependent on luacap debug functions
-function callstack()
-	local	t = {}
-	if debug then
-		t = avo_lua.split(debug.traceback(), '\n', true)
-		for k,v in pairs(t) do
-			if string.match(v, "stack traceback") then 
-				next(t)
-			else
-				t[k] = string.format("[%d] %s", k-1, string.gsub(string.gsub(v, ".+\\", ""), ">", ""))
-			end
-		end
-	end
-	return t
 end
 
 --/ empty function used as plug
