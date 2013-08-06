@@ -1,7 +1,7 @@
 --[[-- INFO -------------------------------------------------------------------
 	File				: avo_lua
 	Description	: Various LUA extensions (string, table, math, etc)
-	Credits			: aVo
+	Credits			: aVo, Artos, xStream, malandrinus
 	Revision		: 0.1
 	Change Date	: 07.30.2013
 --]] --------------------------------------------------------------------------
