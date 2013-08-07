@@ -1,9 +1,9 @@
 --[[-- INFO -------------------------------------------------------------------
-	File				: avo_debug_m
+	File				: avo_debug
 	Description : Debug functions and callbacks for most game events
 	Credits		 	: aVo, Alundaio
-	Revision		: 0.4
-	Change Date : 07.29.2013
+	Revision		: 1.0
+	Change Date : 08.05.2013
 --]]---------------------------------------------------------------------------
 --[[-- TODO -------------------------------------------------------------------
 	1. luacap debug functionality
@@ -11,7 +11,8 @@
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
-local sname = script_name()
+local self_name = script_name()
+local cfg_file = "avo\\modules\\avo_debug.ltx"
 
 local show_top_hud = false
 local show_left_hud = false
@@ -24,9 +25,9 @@ local debug_hud_top = nil
 local debug_hud_left = nil
 local debug_hud_right = nil
 
-local toggle_top_key = 4
-local toggle_left_key = 3
-local toggle_right_key = 5
+local toggle_top_start = 4
+local toggle_left_start = 3
+local toggle_right_start = 5
 local debug_huds = {
 	"position_hud", 
 	--[["corpse_hud",]]--
@@ -44,48 +45,38 @@ local debug_huds = {
 
 local debug_god = false
 
+local keybind_sandbox_key = DIK_keys.DIK_INSERT
+
 local actions_by_stalker_ids = nil
 
 --/----------------------------------------------------------------------------
 --/ Module entry point.
 --/----------------------------------------------------------------------------
-function _init(ini)
-	_G.callstack = this.callstack
-
-	--/ Logging
-	local printf_log = avo_utils.read_from_ini(ini,"logging","printf","bool",false)
-	local debug_log = avo_utils.read_from_ini(ini,"logging","debug","bool",false)
-	local warning_log = avo_utils.read_from_ini(ini,"logging","warning","bool",false)
-	local error_log = avo_utils.read_from_ini(ini,"logging","error","bool",false)
-	local visual_log = avo_utils.read_from_ini(ini,"logging","visual","bool",false)
-	if debug_log then _G.dlog = avo_log.dlog end
-	if warning_log then _G.wlog = avo_log.wlog end
-	if error_log then _G.elog = avo_log.elog end
-	if visual_log then _G.vlog = avo_log.vlog end
-	if printf_log then _G.printf = avo_log.printf end
-	
-	--/ Debug
-	local dev_debug = avo_utils.read_from_ini(ini,"debug","dev_debug","bool",false)
-	local sim_debug = avo_utils.read_from_ini(ini,"debug","sim_debug","bool",false)
+function _init()
+	local ini = ini_file(cfg_file)
+	--/ GSC debug
+	local dev_debug = read_ini(ini,"debug","dev_debug","bool",false)
+	local sim_debug = read_ini(ini,"debug","sim_debug","bool",false)
 	if dev_debug then _G.dev_debug = true end
 	if sim_debug then _G.sim_debug = true end
 	
-	--/ Debug HUD
-	show_top_hud = avo_utils.read_from_ini(ini,"debug_hud","show_top_hud","bool",false)
-	show_left_hud = avo_utils.read_from_ini(ini,"debug_hud","show_left_hud","bool",false)
-	show_right_hud = avo_utils.read_from_ini(ini,"debug_hud","show_right_hud","bool",false)
-	keybind_shift_key = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_shift_key","string","RCONTROL")]
-	keybind_toggle_top_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
-	keybind_toggle_left_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
-	keybind_toggle_right_hud = DIK_keys["DIK_"..avo_utils.read_from_ini(ini,"debug_hud","keybind_toggle_right_hud","string","END")]
+	--/ debug HUDs
+	show_top_hud = read_ini(ini,"debug_hud","show_top_hud","bool",false)
+	show_left_hud = read_ini(ini,"debug_hud","show_left_hud","bool",false)
+	show_right_hud = read_ini(ini,"debug_hud","show_right_hud","bool",false)
+	keybind_shift_key = DIK_keys["DIK_"..read_ini(ini,"debug_hud","keybind_shift_key","string","RCONTROL")]
+	keybind_toggle_top_hud = DIK_keys["DIK_"..read_ini(ini,"debug_hud","keybind_toggle_top_hud","string","HOME")]
+	keybind_toggle_left_hud = DIK_keys["DIK_"..read_ini(ini,"debug_hud","keybind_toggle_left_hud","string","DELETE")]
+	keybind_toggle_right_hud = DIK_keys["DIK_"..read_ini(ini,"debug_hud","keybind_toggle_right_hud","string","END")]
 	
-	--/ Cheat
-	debug_god = avo_utils.read_from_ini(ini,"cheat","god","bool",false)
+	debug_god = read_ini(ini,"cheat","god","bool",false) -- god mode
 	
-	--/ Callbacks
-	if avo_utils.read_from_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
+	keybind_sandbox_key = DIK_keys["DIK_"..read_ini(ini,"sandbox","keybind_sandbox_key","string","INSERT")] -- key to trigger sandbox script (combination of keybind_shift_key and this)
 	
-	build_actions() --/ build stalker action ids table
+	--/ callbacks
+	if read_ini(ini,"callbacks","enabled","bool",false) then init_slots() end
+	
+	build_actions() -- build stalker action ids table
 end
 
 --/----------------------------------------------------------------------------
@@ -147,7 +138,7 @@ end
 --/ NPC position information
 --/----------------------------------------------------------------------------
 function position_other_hud_show(hud)
-	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 
 	hud:set_header("-[NPC Position Info]-")
 	if obj then
@@ -175,7 +166,7 @@ end
 --/ Squad information
 --/----------------------------------------------------------------------------
 function squad_info_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	if (near) then
 		local squad = get_object_squad(near)
 		if not(squad) then return end
@@ -197,7 +188,7 @@ end
 --/ Detailed stalker information
 --/----------------------------------------------------------------------------
 function stalker_info_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 
 	local st = near and db.storage[near:id()]
 	if (st) then
@@ -223,7 +214,7 @@ function stalker_info_hud_show(hud)
 
 		local pt_index = near.get_current_point_index and near:get_current_point_index()
 		if (not pt_index or pt_index == 4294967296 ) then
-			pt_index = st.active_scheme and (st.active_scheme == "camper" or st.active_scheme == "beh") and avo_utils.load_var(near,"path_index",nil)
+			pt_index = st.active_scheme and (st.active_scheme == "camper" or st.active_scheme == "beh") and agu.load_var(near,"path_index",nil)
 		end
 		hud:add_msg("PT index",pt_index)
 		--[[
@@ -244,7 +235,7 @@ end
 --/ NPC enemy information
 --/----------------------------------------------------------------------------
 function enemy_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	if (near) then
 		local id = near:id()
 		local se_obj = alife():object(id)
@@ -335,7 +326,7 @@ end
 --/ Planner information
 --/----------------------------------------------------------------------------
 function planner_hud_show(hud)
-	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	hud:set_header("-[Planner Info]-")
 	if (obj) then
 		local manager = obj.motivation_action_manager and obj:motivation_action_manager()
@@ -380,7 +371,7 @@ end
 --/ Wounded information
 --/----------------------------------------------------------------------------
 function wounded_hud_show(hud)
-	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	hud:set_header("-[Wounded Info]-")
 	if (obj) then
 		hud:add_msg("Name",obj:name())
@@ -416,7 +407,7 @@ end
 --/ Animation information
 --/----------------------------------------------------------------------------
 function anim_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	if (near) then
 		local st = db.storage[near:id()]
 		if (st) then
@@ -451,7 +442,7 @@ function anim_hud_show(hud)
 					hud:add_msg("Cover Name",st.animpoint.cover_name)
 					hud:add_msg("Use Camp",st.animpoint.use_camp)
 					hud:add_msg("Description",description)
-					hud:add_msg("Smart Direction",st.animpoint.smart_direction and avo_utils.vector_to_string(st.animpoint.smart_direction))
+					hud:add_msg("Smart Direction",st.animpoint.smart_direction and agu.vector_to_string(st.animpoint.smart_direction))
 				end
 			elseif (st.active_scheme == "walker") then
 				local avail_actions = xr_animpoint_predicates.associations["walker_camp"]
@@ -489,7 +480,7 @@ end
 --/ custom behaviors
 --/----------------------------------------------------------------------------
 function behavior_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	if (near) then
 		-- local st = db.storage[near:id()].beh
 		local st = db.storage[near:id()]
@@ -523,7 +514,7 @@ end
 --/ Weapon information
 --/----------------------------------------------------------------------------
 function weapon_hud_show(hud)
-	local near = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local near = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	local wpn
 	if (near) then
 		wpn = near:active_item()
@@ -532,24 +523,23 @@ function weapon_hud_show(hud)
 		wpn = db.actor:active_item()
 	end
 
-	if (wpn == nil or not avo_utils.item_is_fa(wpn)) then
+	if (wpn == nil or not agu.item_is_fa(wpn)) then
 		hud:clear()
 		return
 	end
 
 	local sobj = alife():object(wpn:id())
-	local pk = get_netpk(sobj) --/ get netpacket
-	local data = nil
-	if pk:isOk() then data = pk:get() end	--/ read from netpacket
+	local pk = get_netpk(sobj) -- get netpacket manager
+	local data = pk:get()	-- read from netpacket
 
 	if (wpn and data) then
 		local sec = wpn:section()
 		hud:add_msg("Weapon",sec)
 		hud:add_msg("Visual",data.visual_name)
 		hud:add_msg("Visual Flag",data.visual_flags)
-		local ef_main_weapon_type = avo_utils.read_from_ini(nil,sec,"ef_main_weapon_type","string","nil")
+		local ef_main_weapon_type = read_ini(nil,sec,"ef_main_weapon_type","string","nil")
 		hud:add_msg("ef_main_weapon_type",ef_main_weapon_type)
-		local ef_weapon_type = avo_utils.read_from_ini(nil,sec,"ef_weapon_type","string","nil")
+		local ef_weapon_type = read_ini(nil,sec,"ef_weapon_type","string","nil")
 		hud:add_msg("ef_weapon_type",ef_weapon_type)
 		hud:add_msg("Condition",data.condition and math.floor(data.condition*100))
 		hud:add_msg("Upgrades",data.upgrades)
@@ -570,16 +560,16 @@ end
 local stalker_id
 local stalker_data = {}
 function stalker_data_hud_show(hud)
-	local obj = avo_utils.get_target_npc() or avo_utils.get_nearest_stalker("cam",500)
+	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
 	hud:set_header("-[Stalker Packet Data]-")
 	if (obj) then
 		if (stalker_id ~= obj:id()) then
 			stalker_id = obj:id()
 			local se_obj = alife():object(stalker_id)
-			avo_utils.switch_offline(se_obj.id)
+			agu.switch_offline(se_obj.id)
 			local pk = get_netpk(se_obj)
 			if pk:isOk() then stalker_data = pk:get() end
-			avo_utils.switch_online(se_obj.id)
+			agu.switch_online(se_obj.id)
 		end
 		-- hud:add_msg("cse_alife_object:",'')
 		-- hud:add_msg("   Story ID",stalker_data.story_id)
@@ -604,7 +594,7 @@ function stalker_data_hud_show(hud)
 		if type(stalker_data.custom_data) == "string" then
 			hud:add_msg("Custom Data",stalker_data.custom_data)
 		else
-			hud:add_msg("Custom Data",avo_table.hash_size(stalker_data.custom_data))
+			hud:add_msg("Custom Data",table.size(stalker_data.custom_data:getTable()))
 			for k,v in pairs(stalker_data.custom_data) do
 				hud:add_msg("   %s:%s",k,v,'')
 			end
@@ -638,23 +628,6 @@ function stalker_data_hud_show(hud)
 	hud:display()
 end
 
---/----------------------------------------------------------------------------
---/ Build call stack trace 
---/----------------------------------------------------------------------------
-function callstack()
-	local	t = {}
-	if debug then
-		t = avo_string.split(debug.traceback(), '\n', true)
-		for k,v in pairs(t) do
-			if string.match(v, "stack traceback") then 
-				next(t)
-			else
-				t[k] = string.format("[%d] %s", k-1, string.gsub(string.gsub(v, ".+\\", ""), ">", ""))
-			end
-		end
-	end
-	return t
-end
 
 --/----------------------------------------------------------------------------
 --/ Callback subscribers
@@ -682,8 +655,8 @@ function init_slots()
 	slot("actor_anabiotic_callback2", on_actor_anabiotic_callback2)
 	slot("actor_task_callback", on_actor_task_callback)
 	
-	slot("actor_hit_callback", on_actor_hit_callback)
-	slot("actor_on_key", on_actor_on_key)
+	slot("actor_hit", on_actor_hit_callback)
+	slot("actor_key_press", this.on_actor_on_key)
 	
 	--/ xr_motivator
 	slot("stalker_net_spawn", on_stalker_net_spawn)
@@ -712,6 +685,7 @@ function on_actor_net_spawn(data)
 	if show_left_hud then debug_hud_left = hud_tool("debug_hud_left") end
 	if show_right_hud then debug_hud_right = hud_tool("debug_hud_right") end
 	
+	if debug_god then db.actor:give_money(200000) end
 end
 
 function on_actor_net_destroy()
@@ -727,13 +701,13 @@ function on_actor_update(delta)
 	
 	--/ Update debug hud displays
 	if show_top_hud then
-		_G["avo_debug_m"][debug_huds[toggle_top_key].."_show"](debug_hud_top)
+		_G[self_name][debug_huds[toggle_top_start].."_show"](debug_hud_top)
 	end
 	if show_right_hud then
-		_G["avo_debug_m"][debug_huds[toggle_right_key].."_show"](debug_hud_right)
+		_G[self_name][debug_huds[toggle_right_start].."_show"](debug_hud_right)
 	end
 	if show_left_hud then
-		_G["avo_debug_m"][debug_huds[toggle_left_key].."_show"](debug_hud_left)
+		_G[self_name][debug_huds[toggle_left_start].."_show"](debug_hud_left)
 	end
 	
 	--/ God mode
@@ -805,29 +779,31 @@ end
 
 local prev_key = nil
 function on_actor_on_key(key)
+	-- dlog("key press registered. key = [%s]",dik_to_bind(key))
 	--/ Toggle debug hud displays
 	if key == keybind_toggle_top_hud and prev_key == keybind_shift_key then
-		if toggle_top_key < #debug_huds then
-			toggle_top_key = toggle_top_key + 1
+		if toggle_top_start < #debug_huds then
+			toggle_top_start = toggle_top_start + 1
 		else
-			toggle_top_key = 1
+			toggle_top_start = 1
 		end
 	elseif key == keybind_toggle_left_hud and prev_key == keybind_shift_key then
-		if toggle_left_key < #debug_huds then
-			toggle_left_key = toggle_left_key + 1
+		if toggle_left_start < #debug_huds then
+			toggle_left_start = toggle_left_start + 1
 		else
-			toggle_left_key = 1
+			toggle_left_start = 1
 		end
 	elseif key == keybind_toggle_right_hud and prev_key == keybind_shift_key then
-		if toggle_right_key < #debug_huds then
-			toggle_right_key = toggle_right_key + 1
+		if toggle_right_start < #debug_huds then
+			toggle_right_start = toggle_right_start + 1
 		else
-			toggle_right_key = 1
+			toggle_right_start = 1
 		end
-	elseif prev_key == keybind_shift_key and key == DIK_keys.DIK_INSERT then
-		for k,v in pairs(_G) do
-			wlog(tostring(k))
-		end
+	elseif prev_key == keybind_shift_key and key == keybind_sandbox_key then
+		sandbox('avo_test', 'main()')
+		-- for k,v in pairs(_G) do
+			-- wlog(tostring(k))
+		-- end
 	end
 	prev_key = key
 end
@@ -860,7 +836,7 @@ function hud_tool:__init(custom_static)
 end
 
 function hud_tool:add_msg(text,value)
-	self.msg = self.msg..avo_string.str_format(text..": %s\\n",value)
+	self.msg = self.msg..string.form("%s: %s\\n", text, value)
 end
 
 function hud_tool:set_header(header)
@@ -959,4 +935,51 @@ function build_actions()
 	actions_by_stalker_ids[188112] = "kill_wounded"
 	actions_by_stalker_ids[188111] = "beh"
 	actions_by_stalker_ids[90005] = "gather_items"
+end
+
+--/ LUA sandbox: http://www.amk-team.ru/forum/index.php?showtopic=6458#entry258260
+function sandbox(file_name, function_name, ...)
+  local status, result = pcall(exec, file_name, function_name, ...)
+  if status == false then
+		elog("(%s:sandbox) call failed, result = [%s]", self_name, result)
+		return
+  else
+    return result
+  end
+end
+
+--/ execute script in sandbox
+function exec(file_name, function_name, ...)
+  if file_name then
+		if not _G[file_name] then dlog("script %s is not loaded", file_name) return end -- script does not exist
+		-- dlog("full script name = %s", getFS():update_path('$game_scripts$', '')..file_name..'.script')
+    local result = assert(loadfile(getFS():update_path('$game_scripts$', '')..file_name..'.script'))
+    if type(result) == "function" then
+      if function_name then
+        result()
+        f = loadstring("return "..function_name)
+        f(...)
+      else
+        result()
+      end
+    else
+			elog("(%s:sandbox) exec failed. function is not available: result = [%s]", self_name, type(result))
+      return
+    end
+  else
+    local file_path = getFS():update_path('$game_scripts', 'avo_test.script')
+    local result = assert(loadfile(file_path))
+    if type(result) == "function" then
+      if function_name then
+        result()
+        f = loadstring("return "..function_name)
+        f(...)
+      else
+        result()
+      end
+    else
+      elog("(%s:sandbox) exec failed. function is not available: result = [%s]", self_name, type(result))
+      return
+    end
+  end
 end
