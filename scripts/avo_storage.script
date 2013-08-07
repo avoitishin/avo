@@ -11,7 +11,7 @@
 local MAX_PACKET_LENGHT = 16200
 local marker_to_type = { [1]='boolean',[2]='number',[3]='string',[4]='table',[5]='u16',[6]='s16',[7]='chunk' } -- [0]=nil is exluded!
 local type_to_marker = { ['nil']=0,['boolean']=1,['number']=2,['string']=3,['table']=4,['u16']=5,['s16']=6,['chunk']=7 }
-local stor_ids = {} -- таблица ID создаваемых stor-объектов ( [ID] = boolean )
+local stor_ids = {} -- таблица id создаваемых stor-объектов ( [id] = boolean )
 local byte_count = 0 -- счетчик (bytes). текущее кол-во считанных байт в хранилище (for statistic)
 local packet_chunks = {} -- таблица нет-пакетов с чанками внешних модулей (option for SIMBION mod)
 
@@ -70,7 +70,7 @@ local function save_chunk(chunk_name,func,binder)
 end
 --/ saving: сохранение данных в stor-объект(ы) хранилища
 local function save_storage()
-	-- dlog("(%s:save_storage) size = [%s/%s]", self_name, table.size(db.avo), next(db.avo))
+	-- dlog("(%s:save_storage) size = [%s/%s]", self_name, table.size(db.avo.storage), next(db.avo.storage))
 	local stor_elm = create_storage_element() -- new stor-объект
 	local pk = stor_elm.tail_pk
 	local cnt_len = 0 -- счетчик limit'а (текущее кол-во байт для записи в stor-объект)
@@ -110,7 +110,7 @@ local function save_storage()
 		end
 	end
 	--/ iterate variables:
-	for key,val in pairs(db.avo) do
+	for key,val in pairs(db.avo.storage) do
 		marker = type_to_marker[type(val)] -- маркировочный индекс (1...4, 0 - исключен)
 		err = not (marker and marker ~= 0 and type(key) == 'string') -- валидны типы ключа и значения?
 		if not err then -- опускаем все, что не годится для сохранения
@@ -186,13 +186,13 @@ local function read_tail_packet(pk)
 		marker  = pk:r_u8() -- маркировочный индекс (1...6)
 		if marker_to_type[marker] then -- принимаем только валидные значения (1...6), 0 - исключен!
 			if     marker == 1 then -- lua_type == 'boolean'
-				db.avo[key] = pk:r_bool()
+				db.avo.storage[key] = pk:r_bool()
 			elseif marker == 2 then -- lua_type == 'number'
-				db.avo[key] = pk:r_float()
+				db.avo.storage[key] = pk:r_float()
 			elseif marker == 5 then -- 'u16'
-				db.avo[key] = pk:r_u16()
+				db.avo.storage[key] = pk:r_u16()
 			elseif marker == 6 then -- 's16'
-				db.avo[key] = pk:r_s16()
+				db.avo.storage[key] = pk:r_s16()
 			elseif marker == 7 then -- 'chunk'
 				local bytes = pk:r_u16() -- размер chunk'а (байт)
 				local ch_pk = net_packet() -- технологический (chunk) нет-пакет
@@ -211,15 +211,15 @@ local function read_tail_packet(pk)
 				if marker == 4 then -- lua_type == 'table'
 					val = table.uncompress(val)
 				end
-				db.avo[key] = val
+				db.avo.storage[key] = val
 			end
 		else
 			abort("(%s:read_tail_packet) failed to read from packet: elapsed = [%s] | key = [%s] | marker = [%s]", self_name, pk:r_elapsed(), key, marker)
 		end
 	end
 	byte_count = byte_count + pk:r_tell() -2 -- текущее кол-во считанных байт в хранилище
-	if db.avo["CStorages"] ~= nil then -- загружен заключительный stor-элемент
-		db.avo["CStorages"] = nil -- удаляем метку
+	if db.avo.storage["CStorages"] ~= nil then -- загружен заключительный stor-элемент
+		db.avo.storage["CStorages"] = nil -- удаляем метку
 		set_clear_callback() -- устанавливаем коллбэк на очистку (при появлении актора в игре)
 		avo_log.log(string.format("----| AVO STORAGE LOADED (in %.3f seconds) |----", os.clock() - start_time))
 		-- sm:call("avo_storage_ready") -- генерируем сигнал события: 'разрешено чтение из хранилища'
@@ -230,15 +230,15 @@ end
 --/ public interface
 --/----------------------------------------------------------------------------
 function _init()
-	db.avo = {} -- initialize storage
+	db.avo.storage = {} -- initialize storage
 	slot("actor_load", this.on_load)
 	slot("actor_save", this.on_save)
 end
 --/ вызов сохранения хранилища (from 'actor_binder:save')
 function on_save()
-	if table.size(db.avo) < 1 then return end -- nothing to save - storage is empty
+	if table.size(db.avo.storage) < 1 then return end -- nothing to save - storage is empty
 	cleanup() -- remove stor-elements after previous save (подстраховка)
-	save_storage() -- saving db.avo storage
+	save_storage() -- saving db.avo.storage storage
 end
 --/ вызов чтения хранилища (from 'actor_binder:load')
 function on_load()
@@ -257,13 +257,13 @@ function set(var_name, value, f_check) -- имя переменной, ее значение и флаг нео
 					-- return false -- тип данных или объем таблицы недопустимы
 				end
 			end
-			db.avo[var_name] = table.clone(value)
+			db.avo.storage[var_name] = table.clone(value)
 		else -- lua_type == 'nil'|'boolean'|'number'|'string'
 			if f_check and marker == 3 and value:len() > MAX_PACKET_LENGHT then -- lua_type == 'string'
 				abort("(%s:set) value of [%s] is too long [%s]", self_name, var_name, val:len())
 				-- return false -- длина строки превышает лимит
 			end
-			db.avo[var_name] = value
+			db.avo.storage[var_name] = value
 		end
 		return true -- записано
 	end
@@ -273,10 +273,10 @@ end
 --/ чтение из хранилища: in: string, any | out: any
 function get(var_name, default)
 	if type(var_name) == 'string' then
-		if type(db.avo[var_name]) == 'table' then
-			return table.clone(db.avo[var_name]) or default -- table
+		if type(db.avo.storage[var_name]) == 'table' then
+			return table.clone(db.avo.storage[var_name]) or default -- table
 		end
-		return db.avo[var_name] or default
+		return db.avo.storage[var_name] or default
 	end
 	return default
 end
@@ -322,7 +322,7 @@ function se_custom_storage:on_register()
 		-- загрузка: чтение tail-пакета в хранилище из объекта (элемента) хранения загруженного из сэйва
 		if self.tail_pk:r_elapsed() > 2 then
 			self.tail_pk:r_seek(2) -- (подстраховка) установка: читать 'с начальной позиции почитанных данных' (+2)
-			read_tail_packet(self.tail_pk) -- reading data from a packet into db.avo storage
+			read_tail_packet(self.tail_pk) -- reading data from a packet into db.avo.storage storage
 		else
 			dlog("(%s:se_custom_storage:on_register) something is fishy with r_elapsed [%s]", self_name, self.tail_pk:r_elapsed())
 		end
