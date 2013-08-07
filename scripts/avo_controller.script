@@ -1,6 +1,6 @@
 --[[-- INFO -------------------------------------------------------------------
 	File				: avo_controller
-	Description	: Mod orchestration script
+	Description	: module orchestration script
 	Credits			: aVo, Alundaio
 	Revision		: 2.1
 	Change Date	: 08.05.2013 complete redesign
@@ -8,36 +8,102 @@
 --/----------------------------------------------------------------------------
 --/ Variables
 --/----------------------------------------------------------------------------
-local self_name = script_name() -- script name
-local debug_on = false -- enable-disable in config not here
+local self_name = script_name()
+local cfg_file = "avo\\avo_controller.ltx"
 
-local start = os.time() -- benchmark
+local fs = getFS() -- file system manager
+
+local modules_root = "$avo_modules$" -- location of module configs. set in fsgame.ltx
+local modules_mask = "avo_*_m.ltx" -- module filename mask
+local modules_section = "module" -- this section is required for each module
+local modules = {} -- all modules (enabled and disabled) are stored here
+
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/----------------------------------------------------------------------------
 function _init()
-	init_actor_slots() -- subscribe to actor_binder signals
+	local start_time = os.clock() -- benchmark
+	
+	local ini = ini_file(cfg_file)
+	local debug_on = read_ini(ini,"debug","enabled","bool",false)
+	if debug_on then
+		avo_debug._init() -- initialize debug module
+	end
+	
+	init_modules() -- initialize modules
+	
+	sm:call("avo_game_started") -- let modules know everything is loaded
 end
 
-function init_actor_slots()
-	slot("actor_set_callbacks", this.set_actor_callbacks)
-	slot("actor_remove_callbacks", this.remove_actor_callbacks)
+--/----------------------------------------------------------------------------
+--/ Modules
+--/----------------------------------------------------------------------------
+--/ get module file names from modules_root directory
+local function get_module_names()
+	if not fs:path_exist(modules_root) then abort(modules_root..
+		[[
+ was not found in fsgame.ltx. Please add this line at the end of fsgame.ltx:
+		]]..modules_root..[[           = true|  false| $game_config$|          avo\modules\
+			]])
+	end -- reminder to add modules_root root
+	
+	local t = {}
+	local f_list = fs:file_list_open_ex(modules_root, bit_or(FS.FS_ListFiles, FS.FS_ClampExt), modules_mask) -- get list of files (without extension)
+	local f_cnt = f_list:Size() -- how many files do we have
+	if f_cnt == 0 then -- if there are no files log and abort or return empty???
+		wlog("NO MODULE FILES found in %s", fs:update_path(modules_root, ""))
+		return t
+	end
+	-- f_list:Sort(FS.FS_sort_by_name_up)
+	for i = 0, f_cnt - 1 do
+		local file = f_list:GetAt(i)
+		local f_name = file:NameShort()
+		table.insert(t, f_name)
+	end
+	return t
 end
 
-function set_actor_callbacks(actor_binder)
-	actor_binder.object:set_callback(callback.hit, this.on_actor_hit, actor_binder)
-	actor_binder.object:set_callback(123, this.on_key_press, actor_binder) -- key press
+--/ initialize and enable module
+function init_module(name, ini)
+	local scr_name = read_ini(ini, modules_section, "script", "string", name) -- read script name from config
+	local module = _G[scr_name]
+	if module and type(module._init) == "function" then
+		module._init(ini) -- initialize module passing module ini_file instance to it
+		modules[name].enabled = true -- if previous step was successful, mark module as enabled
+	end
 end
 
-function remove_actor_callbacks(actor_binder)
-	actor_binder.object:set_callback(callback.hit, nil)
-	actor_binder.object:set_callback(123, nil) -- key press
-end
-
-function on_actor_hit(obj, amount, local_direction, who, bone_index)
-	sm:call("actor_hit", obj, amount, local_direction, who, bone_index)
-end
-
-function on_key_press(key)
-	sm:call("actor_key_press", key)
+--/ initialize modules
+function init_modules()
+	--/ string.gsub will not work properly with special characters in a string
+	--/	workaround is to change all (,),- to @ and do gsub
+	local function gsub_path()
+		local m_root = fs:update_path(modules_root, "")
+		local cfg_root = fs:update_path("$game_config$", "")
+		m_root = string.gsub(m_root,"%(","@")
+		m_root = string.gsub(m_root,"%)","@")
+		m_root = string.gsub(m_root,"%-","@")
+		cfg_root = string.gsub(cfg_root,"%(","@")
+		cfg_root = string.gsub(cfg_root,"%)","@")
+		cfg_root = string.gsub(cfg_root,"%-","@")
+		return string.gsub(m_root,cfg_root,"")
+	end
+	--/--
+	local t = get_module_names()
+	local modules_path = gsub_path()
+	if #t == 0 then return false end
+	for _, name in ipairs(t) do
+		local enabled = false
+		local config = name..".ltx"
+		local ini = ini_file(modules_path..config)
+		if ini:section_exist(modules_section) then
+			modules[name] = {enabled = false, cfg = modules_path..config}
+			enabled = read_ini(ini, modules_section, "enabled", "bool", false)
+		end
+		if enabled then
+			init_module(name, ini)
+		end
+	end
+	ini = nil -- help gc
+	return true
 end
