@@ -28,8 +28,7 @@ function _init()
 	_G["read_ini"] = this.read_ini	-- read from config file
 	_G["ext_namespace"] = this.ext_namespace -- protection against overriding lua functions
 	
-	avo_lua._init() --/ initialize lua extensions here
-	
+	avo_lua._init() --/ initialize lua extensions
 	
 	local dlog_on = read_ini(ini,"logging","debug","bool",false)
 	local elog_on = read_ini(ini,"logging","error","bool",false)
@@ -56,6 +55,11 @@ function _init()
 	
 	--/ initialize timers here
 	
+	-- this.init_callbacks() -- initialize custom (xray extensions) callbacks
+	
+	avo_game_utils._init()	-- initialize game utilities
+	_G["agu"] = avo_game_utils -- alias
+	
 	avo_controller._init() --/ initialize controller as last step
 	
 	avo_log.log(string.format("----| AVO FRAMEWORK LOADED (in %.3f seconds) |----", os.clock() - start))
@@ -63,6 +67,41 @@ function _init()
 	collectgarbage()
 end
 
+--/----------------------------------------------------------------------------
+--/ initialize callbacks
+--/----------------------------------------------------------------------------
+-- function init_callbacks()
+	-- slot("actor_set_callbacks", this.set_actor_callbacks)
+	-- slot("actor_remove_callbacks", this.remove_actor_callbacks)
+-- end
+-- function set_actor_callbacks(actor_binder)
+	-- actor_binder.object:set_callback(callback.hit, this.on_actor_hit, actor_binder)
+	-- actor_binder.object:set_callback(123, this.on_key_press, actor_binder) -- key press
+-- end
+-- function remove_actor_callbacks(actor_binder)
+	-- actor_binder.object:set_callback(callback.hit, nil)
+	-- actor_binder.object:set_callback(123, nil) -- key press
+-- end
+-- function on_actor_hit(obj, amount, local_direction, who, bone_index)
+	-- sm:call("actor_hit", obj, amount, local_direction, who, bone_index)
+-- end
+-- function on_key_press(key)
+	-- dlog("key pressed: %s", key)
+	-- sm:call("actor_key_press", key)
+-- end
+
+--/----------------------------------------------------------------------------
+--/ initialize signals manager
+--/----------------------------------------------------------------------------
+function init_signals()
+  local sm = avo_signals.get_mgr()
+  if sm then _G["sm"] = sm else abort("(%s) falied to initialize signals manager", self_name) end
+  _G["slot"] = avo_signals.slot
+end
+
+--/----------------------------------------------------------------------------
+--/ global functions
+--/----------------------------------------------------------------------------
 --/ protection for extending existing lua namespaces with new functions
 --/ (i.e. string.split etc)
 function ext_namespace(ns, name, fn)
@@ -75,14 +114,6 @@ function ext_namespace(ns, name, fn)
 		_G[ns][name] = fn
 	end
 end
-
---/ initialize signals manager
-function init_signals()
-  local sm = avo_signals.get_mgr()
-  if sm then _G["sm"] = sm else abort("(%s) falied to initialize signals manager", self_name) end
-  _G["slot"] = avo_signals.slot
-end
-
 --/ abort game and log error details
 function abort(msg,...)
 	local function log(msg, ...)
@@ -116,15 +147,13 @@ function abort(msg,...)
 	os.exit(666)
   -- local fail = avo_abort_game/0
 end
-
 --/ game specific assert. will crash game if cond is false
 function ASSERT(cond, msg)
 	if not cond then
     abort(msg)
   end
 end
-
---/ read from config file
+--/ read value from config file
 function read_ini(ini,section,line,var_type,default)
 	if not (ini) then
 		ini = system_ini()
@@ -143,7 +172,6 @@ function read_ini(ini,section,line,var_type,default)
 		return default
 	end
 end
-
 --/ empty function used as plug
 function fn_empty(...)
 end
