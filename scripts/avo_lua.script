@@ -14,27 +14,27 @@ local self_name = script_name()
 --/----------------------------------------------------------------------------
 function _init()
 	--/ string
-	ext_namespace("string","trim",this.trim) --/  trim spaces
-	ext_namespace("string","split",this.split)	--/ split into table by delim
-	ext_namespace("string","format_ext",this.format_ext) --/ format with tostring
-	ext_namespace("string","get_filename",this.get_filename) --/ get filename from path
+	ext_namespace("string","trim",this.trim) --  trim spaces
+	ext_namespace("string","split",this.split)	-- split into table by delim
+	ext_namespace("string","form",this.form) -- custom version of string.format
+	ext_namespace("string","get_filename",this.get_filename) -- get filename from path
 	
 	--/ table
-	ext_namespace("table","find",this.find)	--/ check if value exists in table
-	ext_namespace("table","clone",this.clone)	--/ clone table
-	ext_namespace("table","size",this.size) --/ get size of hash table
-	ext_namespace("table","compress",this.compress) --/ compress table into string
-	ext_namespace("table","uncompress",this.uncompress) --/ uncompress table from string
-	ext_namespace("table","serialize",this.serialize) --/ serialize table into string
-	ext_namespace("table","unserialize",this.unserialize) --/ unserialize table from string
-	ext_namespace("table","tostring",this.t_tostring) --/ print out table
+	ext_namespace("table","find",this.find)	-- check if value exists in table
+	ext_namespace("table","clone",this.clone)	-- clone table
+	ext_namespace("table","size",this.size) -- get size of hash table
+	ext_namespace("table","compress",this.compress) -- compress table into string
+	ext_namespace("table","uncompress",this.uncompress) -- uncompress table from string
+	ext_namespace("table","serialize",this.serialize) -- serialize table into string
+	ext_namespace("table","unserialize",this.unserialize) -- unserialize table from string
+	ext_namespace("table","tostring",this.t_tostring) -- format table data for print
 	
 	--/ math
 	ext_namespace("math","isnan",this.isnan)
 	ext_namespace("math","isinf",this.isinf)
 	ext_namespace("math","isfinite",this.isfinite)
-	ext_namespace("math","round",this.round) --/ round to decimal or integer
-	ext_namespace("math","rand",this.rand) --/ random number
+	ext_namespace("math","round",this.round) -- round to decimal or integer
+	ext_namespace("math","rand",this.rand) -- random number
 	
 end
 
@@ -74,11 +74,40 @@ function trim(str)
 end
 
 --/ replace each place holder %s with tostring(p) of parameters ...
-function format_ext(text,...)
-	if not text then return end
-	local i = 0
-	local p = {...}
-	return string.gsub(text,"%%s",function(a) i = i + 1 return tostring(p[i]) end)
+-- function form(text,...)
+	-- if not text then return end
+	-- local i = 0
+	-- local p = {...}
+	-- return string.gsub(text,"%%s",function(a) i = i + 1 return tostring(p[i]) end)
+-- end
+function form(msg, ...)
+  local function tostr(val)
+    if type(val) == 'number' or type(val) == 'boolean' or type(val) == 'nil' then return tostring(val) -- number, boolean, nil
+    elseif type(val) == 'table' then return table.serialize(val) -- table
+    elseif type(val) == 'userdata' then
+      if type(val.getP) == 'function' then return string.format("vec(%.3f,%.3f,%.3f)", v.x, v.y, v.z) -- vector
+      else return '<userdata>' end -- userdata
+    elseif type(val) == 'string' then return val -- string
+    else return '<'..type(val)..'>'
+    end
+  end
+  if type(msg) ~= 'string' then return tostr(msg) end
+  if next({...}) then -- with arguments
+    local args, i = {...}, 1
+    for k,v in pairs(args) do -- replace empty strings
+      if v == '' then args[k] = '<empty>' end
+    end
+    for pat in msg:gmatch('%%[%.|d|s|%d]%.?%d?f?') do 
+      if not args[i] then msg = msg:gsub('%'..pat, 'nil', 1) -- replace nil agruments with 'nil'
+      elseif string.find(pat, '%%[%.|%d].*f') then msg = msg:gsub('%'..pat, string.format(pat, args[i]),1) -- format floats (%3.2f, %.4f, etc)
+      else msg = msg:gsub('%'..pat, tostr(args[i]), 1) -- format the rest (%d and %s)
+      end
+      i = i + 1
+    end
+    return msg
+  else -- no arguments
+    return msg == '' and '<empty>' or msg
+  end
 end
 
 --/ get file name without extension from path
@@ -362,6 +391,7 @@ function serialize(x, recur)
 		elseif getmetatable(x) then -- can not serialize a table that has a metatable associated with it.
 			return nil, true
 		elseif marker == 4 then -- lua_type == 'table'
+			if table.size(x) == 0 then return '{}' end
 			if recur[x] then -- can not serialize recursive tables.
 				return nil, true
 			end
