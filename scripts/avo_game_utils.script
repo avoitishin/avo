@@ -5,107 +5,55 @@
 	Revision		: 0.1
 	Change Date	: 07.25.2013
 --]] --------------------------------------------------------------------------
-
 --/----------------------------------------------------------------------------
---/ INI UTILS
+--/ Variables
 --/----------------------------------------------------------------------------
+local self_name = script_name()
+local sim = alife()
 --/----------------------------------------------------------------------------
---/ Read from ini file
+--/ Initialization
 --/----------------------------------------------------------------------------
-function read_from_ini(ini,section,line,var_type,default)
-	if not (ini) then
-		ini = system_ini()
-	end
-
-	if (section and line and ini:section_exist(section) and ini:line_exist(section,line)) then
-		if (var_type == "bool") then
-			return ini:r_bool(section,line)
-		elseif (var_type == "string") then
-			return ini:r_string(section,line)
-		elseif (var_type == "float") then
-			return ini:r_float(section,line)
-		else
-			return ini:r_string_wq(section,line)
-		end
-	else
-		return default
-	end
+function _init()
+	init_slots() -- subscribe to game events
+	db.avo.online = {} -- database of online objects
+	db.avo.online.stalkers = {} -- database of online stalkers
+	db.avo.online.monsters = {} -- database of online monsters
 end
 
---/----------------------------------------------------------------------------
---/ Parse ini section to table: [key] = value
---/----------------------------------------------------------------------------
-function parse_ini_section_to_array(ini,section)
-	local tmp = nil
-	local trim = avo_string.trim
-	if ini and ini:section_exist(section) then
-		tmp = {}
-		local result, id, value = nil, nil, nil
-		for a = 0, ini:line_count(section) - 1 do
-			result, id, value = ini:r_line(section,a,"","")
-			if id ~= nil and trim(id) ~= "" and trim(id) ~= nil then
-				tmp[trim(id)] = trim(value)
-			end
+function init_slots()
+	slot("stalker_net_spawn", this.on_stalker_net_spawn)
+	slot("stalker_net_destroy", this.on_stalker_net_destroy)
+end
+
+function on_stalker_net_spawn(motivator_binder, se_object)
+	local npc = motivator_binder.object
+	table.insert(db.avo.online.stalkers, npc:id()) -- add to db of online stalkers
+end
+
+function on_stalker_net_destroy(motivator_binder)
+	local npc = motivator_binder.object
+	for i = #db.avo.online.stalkers, 1, -1 do -- remove from db
+		if (npc:id() == db.avo.online.stalkers[i]) then
+			table.remove(db.avo.online.stalkers,i)
+			break
 		end
 	end
-	return tmp
 end
 
 --/----------------------------------------------------------------------------
 --/ GAME UTILS
 --/----------------------------------------------------------------------------
---/----------------------------------------------------------------------------
---/ Save variable to pstore
---/----------------------------------------------------------------------------
-function save_var(game_object,name,value)
-	xr_logic.pstor_store(game_object,name,value)
-	return val
-end
---/----------------------------------------------------------------------------
---/ Load variable from pstore
---/----------------------------------------------------------------------------
-function load_var(game_object,name,def_value)
-	return xr_logic.pstor_retrieve(game_object,name,def_value)
-end
---/----------------------------------------------------------------------------
---/ When NPC switches online add his ID to DB
---/----------------------------------------------------------------------------
-function add_stalker(npc)
-	if not (db.OnlineStalkers) then
-		db.OnlineStalkers = {}
-	end
-	table.insert(db.OnlineStalkers,npc:id())
-end
---/----------------------------------------------------------------------------
---/ When NPC goes offline remove his ID from DB
---/----------------------------------------------------------------------------
-function del_stalker(npc)
-	if not (db.OnlineStalkers) then
-		return
-	end
-	for i = #db.OnlineStalkers, 1, -1 do
-		if (npc:id() == db.OnlineStalkers[i]) then
-			table.remove(db.OnlineStalkers,i)
-			break
-		end
-	end
-end
---/----------------------------------------------------------------------------
---/ Find stalker who is closest to (npc). Can pass npc, or "cam" for actors camera
---/----------------------------------------------------------------------------
-function get_nearest_stalker(npc)
-	if not (db.OnlineStalkers) then
-		return
-	end
-	local stalker
-	local dist
-	local nearest_stalker, nearest_dist
-	local pos
-	for i=1, #db.OnlineStalkers do
-		stalker = db.storage[db.OnlineStalkers[i]] and db.storage[db.OnlineStalkers[i]].object or level.object_by_id(db.OnlineStalkers[i])
+--/ find stalker and distance closest to npc. Can pass npc, or "cam" for actor
+function get_nearest_stalker(npc, max_dist)
+	if not max_dist then max_dist = 500 end -- actual game dist will be sqrt of this (~22m)
+	local stalker, dist, nearest_stalker, nearest_dist, pos
+	for i=1, #db.avo.online.stalkers do
+		repeat -- added
+		stalker = db.storage[db.avo.online.stalkers[i]] and db.storage[db.avo.online.stalkers[i]].object or level.object_by_id(db.avo.online.stalkers[i])
 		if (stalker and stalker:alive()) then
 			pos = npc == "cam" and device().cam_pos or npc:position()
 			dist = pos:distance_to_sqr(stalker:position())
+			if dist > max_dist then break end -- added
 			if not (nearest_dist) then
 				nearest_dist = dist
 				nearest_stalker = stalker
@@ -116,37 +64,34 @@ function get_nearest_stalker(npc)
 				nearest_stalker = stalker
 			end
 		end
+		until true -- added
 	end
 	return nearest_stalker, nearest_dist
 end
---/----------------------------------------------------------------------------
---/ Get NPC using you aiming at. Uses X-Ray Extensions for level.get_target_obj
---/----------------------------------------------------------------------------
+--/ get npc actor is aiming at. 
 function get_target_npc()
-	local obj = get_target_at_cursor()
-	if (obj) and IsStalker(obj) then
+	local obj = get_target_object()
+	if obj and IsStalker(obj) then -- TODO: stop using _g.IsStalker
 		return obj
 	end
 end
-
-function get_target_at_cursor()
-	if (level.get_target_obj) then
+--/ get object actor is aiming at (uses xray extensions for level.get_target_obj)
+function get_target_object()
+	if level.get_target_obj then
 		return level.get_target_obj()
 	end
 end
---/----------------------------------------------------------------------------
---/ Switch online/offline
---/----------------------------------------------------------------------------
+
+--/ Switch online or offline
 function switch_online(id)
-	if id == -1 then return end
-	local sim = alife()
+	if id < 1 or id > 65535 then return end
 	if sim then
 		sim:set_switch_online(id,true)
 		sim:set_switch_offline(id,false)
 	end
 end
 function switch_offline(id)
-	local sim = alife()
+	if id < 1 or id > 65535 then return end
 	if sim then
 		sim:set_switch_online(id,false)
 		sim:set_switch_offline(id,true)
@@ -154,7 +99,7 @@ function switch_offline(id)
 end
 
 --/----------------------------------------------------------------------------
---/ Check if object is a weapon
+--/ Check if object is a weapon. TODO: refactor and build tables of weapons, items, etc
 --/----------------------------------------------------------------------------
 function item_is_fa(o,c)
 	if not c then
@@ -182,11 +127,4 @@ function item_is_fa(o,c)
 		return true
 	end
 	return false
-end
-
---/----------------------------------------------------------------------------
---/ Convert vector to string
---/----------------------------------------------------------------------------
-function vector_to_string(vec)
-	return vec.x..","..vec.y..","..vec.z
 end
