@@ -85,7 +85,7 @@ function form(msg, ...)
     if type(val) == 'number' or type(val) == 'boolean' or type(val) == 'nil' then return tostring(val) -- number, boolean, nil
     elseif type(val) == 'table' then return table.serialize(val) -- table
     elseif type(val) == 'userdata' then
-      if type(val.getP) == 'function' then return string.format("vec(%.3f,%.3f,%.3f)", v.x, v.y, v.z) -- vector
+      if type(val.getP) == 'function' then return string.format("vec(%.3f,%.3f,%.3f)", val.x, val.y, val.z) -- vector
       else return '<userdata>' end -- userdata
     elseif type(val) == 'string' then return val -- string
     else return '<'..type(val)..'>'
