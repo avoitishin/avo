@@ -30,15 +30,15 @@ local toggle_left_start = 3
 local toggle_right_start = 5
 local debug_huds = {
 	"position_hud", 
-	--[["corpse_hud",]]--
+	--"corpse_hud",
 	"position_other_hud", 
 	"squad_info_hud", 
 	"stalker_info_hud", 
-	"enemy_hud", 
+	--"enemy_hud", -- some glitches with sending be instead of actor to xr_conditions.get_actor_dist_ge
 	"planner_hud", 
 	"wounded_hud", 
 	"anim_hud", 
-	--[["behavior_hud",]]-- 
+	--"behavior_hud",
 	"weapon_hud",
 	"stalker_data_hud"
 }
@@ -138,7 +138,7 @@ end
 --/ NPC position information
 --/----------------------------------------------------------------------------
 function position_other_hud_show(hud)
-	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",500)
+	local obj = agu.get_target_npc() or agu.get_nearest_stalker("cam",5)
 
 	hud:set_header("-[NPC Position Info]-")
 	if obj then
@@ -214,7 +214,7 @@ function stalker_info_hud_show(hud)
 
 		local pt_index = near.get_current_point_index and near:get_current_point_index()
 		if (not pt_index or pt_index == 4294967296 ) then
-			pt_index = st.active_scheme and (st.active_scheme == "camper" or st.active_scheme == "beh") and agu.load_var(near,"path_index",nil)
+			pt_index = st.active_scheme and (st.active_scheme == "camper" or st.active_scheme == "beh") and xr_logic.pstor_retrieve(near,"path_index",nil)
 		end
 		hud:add_msg("PT index",pt_index)
 		--[[
@@ -250,7 +250,7 @@ function enemy_hud_show(hud)
 			hud:add_msg("Actor Relation",relation[near:relation(db.actor)])
 
 			if (st.overrides and st.overrides.combat_ignore) then
-				hud:add_msg("CombatIgnoreCond",xr_logic.pick_section_from_condlist(be, near, st.overrides.combat_ignore.condlist))
+				hud:add_msg("CombatIgnoreCond",xr_logic.pick_section_from_condlist(be, near, st.overrides.combat_ignore.condlist)) -- error here, not passing actor to xr_conditions
 			end
 
 			hud:add_msg("Combat Type",st.script_combat_type)
@@ -442,7 +442,7 @@ function anim_hud_show(hud)
 					hud:add_msg("Cover Name",st.animpoint.cover_name)
 					hud:add_msg("Use Camp",st.animpoint.use_camp)
 					hud:add_msg("Description",description)
-					hud:add_msg("Smart Direction",st.animpoint.smart_direction and agu.vector_to_string(st.animpoint.smart_direction))
+					hud:add_msg("Smart Direction",st.animpoint.smart_direction and string.form(st.animpoint.smart_direction))
 				end
 			elseif (st.active_scheme == "walker") then
 				local avail_actions = xr_animpoint_predicates.associations["walker_camp"]
@@ -591,14 +591,7 @@ function stalker_data_hud_show(hud)
 		hud:add_msg("Skeleton",stalker_data.skeleton_name)
 		hud:add_msg("Skel. Flag",stalker_data.skeleton_flag)
 		hud:add_msg("Source ID",stalker_data.source_id)
-		if type(stalker_data.custom_data) == "string" then
-			hud:add_msg("Custom Data",stalker_data.custom_data)
-		else
-			hud:add_msg("Custom Data",table.size(stalker_data.custom_data:getTable()))
-			for k,v in pairs(stalker_data.custom_data) do
-				hud:add_msg("   %s:%s",k,v,'')
-			end
-		end
+		hud:add_msg("Custom Data",stalker_data.custom_data:getString())
 		hud:add_msg("Visual",stalker_data.visual_name)
 		hud:add_msg("Vis. Flags",stalker_data.visual_flags)
 		hud:add_msg("team,squad,group",string.format("%d, %d, %d", stalker_data.g_team, stalker_data.g_squad, stalker_data.g_group))
@@ -685,7 +678,6 @@ function on_actor_net_spawn(data)
 	if show_left_hud then debug_hud_left = hud_tool("debug_hud_left") end
 	if show_right_hud then debug_hud_right = hud_tool("debug_hud_right") end
 	
-	if debug_god then db.actor:give_money(200000) end
 end
 
 function on_actor_net_destroy()
@@ -717,6 +709,9 @@ function on_actor_update(delta)
 		db.actor.psy_health = 1
 		db.actor.radiation = 0
 		db.actor.power = 1
+		-- local curr_money = db.actor:money()
+		-- local short_money = 200000 - curr_money
+		-- if short_money > 0 then db.actor:give_money(short_money) end
 	end
 end
 
@@ -728,7 +723,7 @@ function on_actor_load(reader)
 	dlog("actor_binder.load(reader) called")
 end
 
-function actor_take_item_from_box(box, item)
+function on_actor_take_item_from_box(box, item)
 	dlog("actor_binder.take_item_from_box(box, item) called")
 end
 
@@ -779,7 +774,7 @@ end
 
 local prev_key = nil
 function on_actor_on_key(key)
-	-- dlog("key press registered. key = [%s]",dik_to_bind(key))
+	-- dlog("key press registered. key = [%s]", key)
 	--/ Toggle debug hud displays
 	if key == keybind_toggle_top_hud and prev_key == keybind_shift_key then
 		if toggle_top_start < #debug_huds then
@@ -801,9 +796,6 @@ function on_actor_on_key(key)
 		end
 	elseif prev_key == keybind_shift_key and key == keybind_sandbox_key then
 		sandbox('avo_test', 'main()')
-		-- for k,v in pairs(_G) do
-			-- wlog(tostring(k))
-		-- end
 	end
 	prev_key = key
 end
