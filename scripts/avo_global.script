@@ -25,10 +25,16 @@ function _init()
 	_G["abort"] = this.abort	-- crash game
 	_G["ASSERT"] = this.ASSERT -- game specific assert
 	_G["fn_empty"] = this.fn_empty -- empty function
-	_G["read_ini"] = this.read_ini	-- read from config file
+	_G["collect_garbage"] = this.collect_garbage -- collect garbage
+	
+	db.avo = {} -- initialize framework space (will hold storage, online objects, etc)
+	
 	_G["ext_namespace"] = this.ext_namespace -- protection against overriding lua functions
 	
 	avo_lua._init() --/ initialize lua extensions
+	
+	_G["read_ini"] = this.read_ini	-- read value from config file
+	_G["read_ini_section"] = this.read_ini_section	-- read section from config file
 	
 	local dlog_on = read_ini(ini,"logging","debug","bool",false)
 	local elog_on = read_ini(ini,"logging","error","bool",false)
@@ -64,7 +70,7 @@ function _init()
 	
 	avo_log.log(string.format("----| AVO FRAMEWORK LOADED (in %.3f seconds) |----", os.clock() - start))
 	
-	collectgarbage()
+	avo_log.log(collect_garbage())
 end
 
 --/----------------------------------------------------------------------------
@@ -153,6 +159,17 @@ function ASSERT(cond, msg)
     abort(msg)
   end
 end
+--/ collect garbage and return statistics
+function collect_garbage()
+	local before = collectgarbage('count')/1024
+	collectgarbage()
+	local after = collectgarbage('count')/1024
+	return string.format("**[GC] mem before %.2fM | mem after %.2fM] | mem freed %.2fM", before, after, before-after)
+end
+
+--/----------------------------------------------------------------------------
+--/ config file utilities
+--/----------------------------------------------------------------------------
 --/ read value from config file
 function read_ini(ini,section,line,var_type,default)
 	if not (ini) then
@@ -172,6 +189,24 @@ function read_ini(ini,section,line,var_type,default)
 		return default
 	end
 end
+--/ read section from config file
+function read_ini_section(ini,section)
+	local tmp = nil
+	local trim = string.trim
+	if ini and ini:section_exist(section) then
+		tmp = {}
+		local result, id, value = nil, nil, nil
+		for a = 0, ini:line_count(section) - 1 do
+			result, id, value = ini:r_line(section,a,'','')
+			if id ~= nil and trim(id) ~= '' then
+				tmp[trim(id)] = trim(value)
+			end
+		end
+	end
+	return tmp
+end
+
+
 --/ empty function used as plug
 function fn_empty(...)
 end
