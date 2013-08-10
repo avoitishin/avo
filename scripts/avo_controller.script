@@ -22,8 +22,6 @@ local modules = {} -- all modules (enabled and disabled) are stored here
 --/ Initialization
 --/----------------------------------------------------------------------------
 function _init()
-	local start_time = os.clock() -- benchmark
-	
 	local ini = ini_file(cfg_file)
 	local debug_on = read_ini(ini,"debug","enabled","bool",false)
 	if debug_on then
