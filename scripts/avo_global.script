@@ -10,21 +10,32 @@
 --/----------------------------------------------------------------------------
 local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
+local mod_version = 0.2
 
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/ Note: some global constants and flags are registered in avo_netpk
 --/----------------------------------------------------------------------------
 function _init()
-	local start = os.clock() -- benchmark
+	avo_profiler.profile_before("avo_global")
 	local ini = ini_file(cfg_file)
 	
+	-- lua debug
 	local lua_debug_on = read_ini(ini,"debug","lua_debug","bool",false)
 	if lua_debug_on then require('RvP') end -- turn on lua debug (requires bin\RvP.dll)
 
 	_G["abort"] = this.abort	-- crash game
 	_G["ASSERT"] = this.ASSERT -- game specific assert
 	_G["fn_empty"] = this.fn_empty -- empty function
+	
+	-- profiler
+	if read_ini(ini,"profiler","enabled","bool",false) then
+		_G["profile_before"] 	= avo_profiler.profile_before
+		_G["profile_after"] 	= avo_profiler.profile_after
+	else
+		_G["profile_before"] 	= fn_empty
+		_G["profile_after"] 	= fn_empty
+	end
 	_G["collect_garbage"] = this.collect_garbage -- collect garbage
 	
 	db.avo = {} -- initialize framework space (will hold storage, online objects, etc)
@@ -69,10 +80,8 @@ function _init()
 	_G["load_pstor"] = xr_logic.pstor_retrieve
 	
 	avo_controller._init() --/ initialize controller as last step
-	
-	avo_log.log(string.format("----| AVO FRAMEWORK LOADED (in %.3f seconds) |----", os.clock() - start))
-	
-	avo_log.log(collect_garbage())
+
+	avo_profiler.profile_after("avo_global")
 end
 
 --/----------------------------------------------------------------------------
@@ -167,6 +176,10 @@ function collect_garbage()
 	collectgarbage()
 	local after = collectgarbage('count')/1024
 	return string.format("**[GC] mem before %.2fM | mem after %.2fM] | mem freed %.2fM", before, after, before-after)
+end
+--/ return mod version
+function get_mod_version()
+	return mod_version
 end
 
 --/----------------------------------------------------------------------------
