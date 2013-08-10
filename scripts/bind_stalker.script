@@ -19,6 +19,8 @@ local primary_objects_filled = false
 class "actor_binder" (object_binder)
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:__init (obj) super(obj)
+	profile_before("actor_init") -- avo
+
 	self.bCheckStart = false
 	self.weather_manager = level_weathers.get_weather_manager()
 	self.surge_manager = surge_manager.get_surge_manager()
@@ -31,10 +33,14 @@ function actor_binder:__init (obj) super(obj)
 	self.last_detective_achievement_spawn_time 	= nil
 	self.last_mutant_hunter_achievement_spawn_time	= nil
 	
-	sm:call("actor_init")
+	sm:call("actor_init") -- avo
+	
+	profile_after("actor_init") -- avo
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:net_spawn(data)
+	profile_before("actor_net_spawn")
+
 --	printf("actor net spawn")
 	level.show_indicators()
 	self.bCheckStart = true
@@ -62,7 +68,8 @@ function actor_binder:net_spawn(data)
 	
 	sm:call("actor_net_spawn", data)	
 	
-	benchmark.main()							          --' Distemper 06.2008 --
+	-- benchmark.main()							          --' Distemper 06.2008 --
+	profile_after("actor_net_spawn")
 	return true
 end
 ----------------------------------------------------------------------------------------------------------------------
