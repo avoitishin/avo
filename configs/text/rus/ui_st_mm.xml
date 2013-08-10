@@ -849,6 +849,9 @@
 	<string id="ui_mm_hbao">
 		<text>HBAO</text>
 	</string>
+	<string id="ui_mm_r4_enable_tessellation">
+		<text>Включить тесселяцию</text>
+	</string>
 	<string id="ui_st_disable_hud">
 		<text>Показывать интерфейс</text>
 	</string>
