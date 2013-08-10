@@ -70,9 +70,9 @@ near    = -1500.0
 far     = 10.0
 
 [sound]
-occlusion_scale = 0.4
-snd_collide_min_volume=0.1
-snd_collide_max_volume=200.
+occlusion_scale					= 0.19
+snd_collide_min_volume	= 0.07
+snd_collide_max_volume	= 085.
 
 [demo_record]
 speed0    = 0.3
@@ -86,7 +86,7 @@ ang_speed3  = 2.0
 
 
 [info_portions]
-;список xml файлов, содержаих info_portions
+;список xml файлов, содержащих info_portions
 files = info_portions, info_zaton, info_jupiter, info_pripyat, info_upgrades
 
 [dialogs]
@@ -97,19 +97,19 @@ files = dialogs, dialogs_zaton, dialogs_jupiter, dialogs_pripyat
 files = encyclopedia_infos
 
 [profiles]
-;список xml файлов, содержаих профили сталкеров и торговцев
+;список xml файлов, содержащих профили сталкеров и торговцев
 files =  npc_profile
 
-;список xml файлов, содержаих описаниљ конкретнvх сталкеров и торговцев
+;список xml файлов, содержащих описания конкретных сталкеров и торговцев
 specific_characters_files = character_desc_general, character_desc_zaton, character_desc_pripyat, character_desc_jupiter, character_desc_underpass
 
 
 [inventory]
 take_dist   	= 2
-max_weight    	= 50
+max_weight    = 50
 max_ruck    	= 56
 max_belt    	= 5 ;16
-slots_count   	= 12 ; count +1 (zero)
+slots_count   = 12 ; count +1 (zero)
 
 slot_persistent_1   = true   ;knife
 slot_active_1       = true
@@ -156,62 +156,62 @@ script_binding      = bind_physic_object.init
 
 
 [lights_signal_light]
-GroupControlSection = spawn_group
-$spawn        = "physics\signal_light"
-class       = SO_HLAMP
-script_binding      = bind_signal_light.init
+GroupControlSection 	= spawn_group
+$spawn        				= "physics\signal_light"
+class       					= SO_HLAMP
+script_binding      	= bind_signal_light.init
 
 
 [search_light]
-GroupControlSection = spawn_group
-$spawn        = "physics\search light"
-class       = O_SEARCH
-cform       = skeleton
-visual        = dynamics\light\projector.ogf
-script_binding      = bind_physic_object.init
+GroupControlSection 	= spawn_group
+$spawn        				= "physics\search light"
+class       					= O_SEARCH
+cform       					= skeleton
+visual        				= dynamics\light\projector.ogf
+script_binding      	= bind_physic_object.init
 
 [explosion_marks]
 wallmarks     = wm\wm_grenade
-dist        = 0.5 ;2.4  ;
-size        = 0.6 ;0.4  ;
+dist        	= 0.5 ;2.4  ;
+size        	= 0.6 ;0.4  ;
 max_count     = 5
 
 [bloody_marks]
 wallmarks     = wm\wm_blood_1,wm\wm_blood_2,wm\wm_blood_3
-dist        = 2.0 ;2.4  ;(м) max расстољние отлета крови
-max_size      = 0.4 ;0.3  ;(м)радиус пљтна при хите силой nominal hit по большому объекту (по маленькому *0.5)
-min_size      = 0.06      ;(м)минимальнvй радиус пљтна
-nominal_hit     = 0.5     ;величина номинального хита, при котором разлетаетсљ максимум крови (max_size)
+dist        	= 2.0 ;2.4  ; (м) max расстояние отлета крови
+max_size      = 0.4 ;0.3  ; (м)радиус пятна при хите силой nominal hit по большому объекту (по маленькому *0.5)
+min_size      = 0.06      ; (м)минимальный радиус пятна
+nominal_hit   = 0.5     	; величина номинального хита, при котором разлетается максимум крови (max_size)
 
 ;капли крови
 
-blood_drops     = wm\wm_blood_drop_1,wm\wm_blood_drop_2,wm\wm_blood_drop_3,wm\wm_blood_drop_4
-start_blood_size  = 0.4     ;размер ранv чтоб начала капать кровь
-stop_blood_size   = 0.025     ;размер ранv чтоб кровь остановилась (должно бvть меньше start_blood_size)
+blood_drops     	= wm\wm_blood_drop_1,wm\wm_blood_drop_2,wm\wm_blood_drop_3,wm\wm_blood_drop_4
+start_blood_size  = 0.4     	; размер раны чтоб начала капать кровь
+stop_blood_size   = 0.025     ; размер раны чтоб кровь остановилась (должно быть меньше start_blood_size)
 
 blood_drop_time     = 0.1     ;OBSOLETE
 blood_drop_time_min = 0.3     ;
 blood_drop_time_max = 2.0     ;
-blood_drop_size   = 0.1     ;размер капли (м) крови, котораљ упала
+blood_drop_size   	= 0.1     ; размер капли (м) крови, которая упала
 
 
 [entity_fire_particles]
-fire_particles = damage_fx\burn_creatures
-start_burn_size = 0.0003    ;размер ожега после которого начать играть партиклv огнљ
-stop_burn_size  = 0.0001    ;размер ожега после которого остановить партиклv
-min_burn_time = 10000   ;минимальное времљ отvгрvша партиклов (даже если рана уже зажила)
+fire_particles 	= damage_fx\burn_creatures
+start_burn_size = 0.0003    ; размер ожега после которого начать играть партиклы огня
+stop_burn_size  = 0.0001    ; размер ожега после которого остановить партиклы
+min_burn_time 	= 10000   	; минимальное время отыгрыша партиклов (даже если рана уже зажила)
 
 [hud_cursor]
 ;все размерv в процентах от длинv экрана
-cross_length    = 0.015         ;длина "палочки" прицела
-min_radius      = 0.0         ;минимальнvй радиус прицела (при нулевой дисперсии)
-max_radius      = 1.0         ;максимальнvй радиус
-radius_lerp_speed = 0.08          ;скорость интерполљции положений прицела
-cross_color     = 0.7,0.7,0.7,0.5   ;цвет прицела
-disp_scale      = 0.08          ;масштаб прицела (относительно радиан)
+cross_length    	= 0.015         		; длина "палочки" прицела
+min_radius      	= 0.0         			; минимальный радиус прицела (при нулевой дисперсии)
+max_radius      	= 1.0         			; максимальнvй радиус
+radius_lerp_speed = 0.08        			; скорость интерполяции положений прицела
+cross_color     	= 0.7,0.7,0.7,0.5   ; цвет прицела
+disp_scale     		= 0.08          		; масштаб прицела (относительно радиан)
 
 [hud_hitmark]
-hit_mark_texture    = ui\ui_hud_hit_mark; ui\ui_empty
+hit_mark_texture    		= ui\ui_hud_hit_mark			; ui\ui_empty
 grenade_mark_texture    = ui\ui_hud_grenade_mark
 ;ui\ui_hud_hit_mark
 ;ui\ui_hud_hit_mark_01
@@ -232,11 +232,11 @@ grenade_mark_texture    = ui\ui_hud_grenade_mark
 ;ui\ui_hud_hit_mark_16
 ;ui\ui_hud_hit_mark_17
 ;ui\ui_hud_hit_mark_18
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; inventory items
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 [document]
 GroupControlSection = spawn_group
 ;discovery_dependency =
@@ -367,8 +367,8 @@ $spawn               = "ai\graph point"
 ; Trade
 ;-----------------------------------------------------------------
 [trade]
-;коэффициентv изменениљ ценv при торговле в зависимости от отношениљ к персонажу
-;линейно апроксимируітсљ между значениљ
+;коэффициентv изменения ценv при торговле в зависимости от отношения к персонажу
+;линейно апроксимируітся между значения
 buy_price_factor_hostile  = 1   ;коэффициент покупки при goodwill = -100
 buy_price_factor_friendly = 1   ;коэффициент покупки при goodwill = 100
 sell_price_factor_hostile = 1   ;коэффициент покупки при goodwill = -100
@@ -450,34 +450,34 @@ Human             = off                     ; option for ALife Simulator
 cform                       = skeleton                    ; collision class
 class                       = SCRPTOBJ                    ; AI class
 
-;параметрv показvваниљ входљих сообений PDA в главном мені
+;параметр показывания входящих сообщений PDA в главном меню
 [maingame_ui]
-pda_msgs_max_show_time = 20000
+pda_msgs_max_show_time 	= 20000
 info_msgs_max_show_time = 10000
 snd_new_contact         = detectors\contact_1
 snd_new_contact1        = detectors\contact_8
 
 [hud_sound]
-hud_sound_vol_k     	= 0.38
-hud_step_sound_vol_k 	= 0.21
+hud_sound_vol_k     	= 1.
+hud_step_sound_vol_k 	= 0.7
 
 [attachable_item]
 GroupControlSection   = spawn_group
 discovery_dependency  =
-$spawn          = "equipment\attachable_item"
-cform                   = skeleton
-class         = II_ATTCH
-cost          = 100
-inv_name        = "Attachable item"
-inv_name_short      = "Attachable item"
-inv_weight        = .5
-inv_grid_width      = 2
-inv_grid_height     = 1
-inv_grid_x        = 16
-inv_grid_y        = 12
+$spawn          			= "equipment\attachable_item"
+cform                 = skeleton
+class         				= II_ATTCH
+cost          				= 100
+inv_name        			= "Attachable item"
+inv_name_short      	= "Attachable item"
+inv_weight       	 		= .5
+inv_grid_width      	= 2
+inv_grid_height     	= 1
+inv_grid_x        		= 16
+inv_grid_y        		= 12
 attach_angle_offset   = 0, -3.14, 1.6
 attach_position_offset  = 0.105, 0.00, 0.085
-attach_bone_name    = bip01_head
+attach_bone_name    	= bip01_head
 
 [new_attachable_item]
 GroupControlSection   = spawn_group
@@ -512,7 +512,7 @@ inv_grid_width      = 2
 inv_grid_height     = 1
 inv_grid_x        = 16
 inv_grid_y        = 12
-attach_angle_offset   = -1.5708,0.1919,3.1416    ;устанавливаетсљ в радианах Angle*PI/180
+attach_angle_offset   = -1.5708,0.1919,3.1416    ;устанавливается в радианах Angle*PI/180
 attach_position_offset  = 0.075, 0.066, 0.023
 attach_bone_name    = bip01_l_hand
 auto_attach       = false
@@ -533,7 +533,7 @@ inv_grid_width      = 2
 inv_grid_height     = 1
 inv_grid_x        = 16
 inv_grid_y        = 12
-attach_angle_offset   = 1.571,0.75,0.0    ;устанавливаетсљ в радианах Angle*PI/180
+attach_angle_offset   = 1.571,0.75,0.0    ;устанавливается в радианах Angle*PI/180
 attach_position_offset  = 0.015, -0.084, 0.023
 attach_bone_name    = bip01_r_hand
 auto_attach       = false
@@ -660,14 +660,14 @@ shape_edge_color    = 32, 32, 32, 255
 bonce_damage_factor_for_objects = 1.
 
 [pkm_visual_memory]
-min_view_distance       = 1 ;0.4        ; коэффициент, которvй множитсљ на eye_range, в зависимости от угла
-max_view_distance       = 1 ;0.8        ; коэффициент, которvй множитсљ на eye_range, в зависимости от угла
-visibility_threshold    = 50 ;150.0       ; значение, при достижении суммой которого объект считаетсљ видимvм
+min_view_distance       = 1 ;0.4        ; коэффициент, которvй множится на eye_range, в зависимости от угла
+max_view_distance       = 1 ;0.8        ; коэффициент, которvй множится на eye_range, в зависимости от угла
+visibility_threshold    = 50 ;150.0       ; значение, при достижении суммой которого объект считается видимvм
 always_visible_distance   = 1 ;0.1
 time_quant          = 0.00001
-decrease_value        = 0.1       ; значение, на которое уменьшаетсљ вес, если объект попал в фрустум, но отсЈксљ по каким-то причинам
+decrease_value        = 0.1       ; значение, на которое уменьшается вес, если объект попал в фрустум, но отсЈкся по каким-то причинам
 velocity_factor         = 0.5
-luminocity_factor     = 0.5       ; фактор освеениљ (только длљ LктЈра)
+luminocity_factor     = 0.5       ; фактор освещения (только для Актера)
 transparency_threshold    = 0.4       ;
 view_fov_deg        = 90
 view_aspect         = 1

@@ -56,21 +56,78 @@
 		<text font="letterica18"  r="240" g="217" b="182" a="255" align="l"/>
 	</cs_demo_play>
 
-	<cs_subtitles_npc  x="200" y="690" width="600" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
-		<text font="graffiti22"  r="240" g="217" b="182" a="255" align="c"/>
+	<closecaption_1  x="512" y="670" width="600" height="72" alignment="c" complex_mode="1">	<!-- normal -->
+		<text font="graffiti22" r="240" g="217" b="182" a="255" align="c"/>
+	</closecaption_1>
+	<closecaption_1_shadow  x="513" y="671" width="600" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_1_shadow>
+
+	<closecaption_2  x="512" y="635" width="600" height="72" alignment="c" complex_mode="1">	<!-- distant voice, "shouting from afar" -->
+		<text font="graffiti22" r="216" g="186" b="140" a="255" align="c"/>
+	</closecaption_2>
+	<closecaption_2_shadow  x="513" y="636" width="600" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_2_shadow>
+
+	<closecaption_3  x="512" y="600" width="740" height="72" alignment="c" complex_mode="1">	<!-- megafon, "megaphone" -->
+		<text font="graffiti22" r="180" g="172" b="148" a="255" align="c"/>
+	</closecaption_3>
+	<closecaption_3_shadow  x="513" y="601" width="740" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_3_shadow>
+
+	<closecaption_4  x="512" y="705" width="600" height="72" alignment="c" complex_mode="1">	<!-- second talker -->
+		<text font="graffiti22" r="238" g="155" b="23" a="255" align="c"/>
+	</closecaption_4>
+	<closecaption_4_shadow  x="513" y="706" width="600" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_4_shadow>
+
+	<cs_subtitles_npc  x="175" y="597" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="216" g="186" b="140" a="255" align="c"/>
 	</cs_subtitles_npc>
 
-	<cs_subtitles_actor  x="200" y="690" width="600" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+<cs_subtitles_npc_shadow  x="176" y="598" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</cs_subtitles_npc_shadow>
+
+	<closecaption_6  x="512" y="565" width="600" height="72" alignment="c" complex_mode="1">	<!-- "speaker" -->
+		<text font="graffiti22" r="255" g="255" b="255" a="255" align="c"/>
+	</closecaption_6>
+	<closecaption_6_shadow  x="513" y="566" width="600" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_6_shadow>
+
+	<cs_subtitles_actor  x="175" y="597" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
 		<text font="graffiti22"  r="240" g="217" b="182" a="255" align="c"/>
 	</cs_subtitles_actor>
 
-	<cs_subtitles_object  x="200" y="690" width="600" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
-		<text font="graffiti22"  r="240" g="217" b="182" a="255" align="c"/>
-	</cs_subtitles_object>
+<cs_subtitles_actor_shadow  x="176" y="598" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</cs_subtitles_actor_shadow>
 
-	<cs_subtitles  x="200" y="690" width="600" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
-		<text font="graffiti22"  r="240" g="217" b="182" a="255" align="c"/>
+	<cs_subtitles_object  x="175" y="597" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="255" g="255" b="255" a="255" align="c"/>
+	</cs_subtitles_object>
+	<cs_subtitles_object_shadow  x="176" y="598" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</cs_subtitles_object_shadow>
+
+	<closecaption_9  x="512" y="635" width="600" height="72" alignment="c" complex_mode="1">	<!-- [closed caption] -->
+		<text font="graffiti22" r="240" g="192" b="0" a="255" align="c"/>
+	</closecaption_9>
+	<closecaption_9_shadow  x="513" y="636" width="600" height="72" alignment="c" complex_mode="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</closecaption_9_shadow>
+
+	<cs_subtitles  x="175" y="597" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="160" g="160" b="160" a="255" align="c"/>
 	</cs_subtitles>
+
+<cs_subtitles_shadow  x="176" y="598" width="674" height="50" complex_mode="1" stretch="1" light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">
+		<text font="graffiti22"  r="0" g="0" b="0" a="200" align="c"/>
+	</cs_subtitles_shadow>
 
 	<cs_yantar_td  x="200" y="200" width="600" height="50" complex_mode="1" stretch="1"
                                                         light_anim="" la_cyclic="1" la_texture="1" la_alpha="1">

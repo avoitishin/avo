@@ -95,8 +95,8 @@ function signal_light_binder:launch()
 
 	local obj = self.object
 	obj:set_const_force(vector():set(0,1,0), 180, 1500)
-	--obj:start_particles("weapons\\light_signal", "link")
-	--obj:get_hanging_lamp():turn_on()
+	obj:start_particles("weapons\\light_signal", "link")
+	obj:get_hanging_lamp():turn_on()
 
 	self.start_time = time_global()
 	self.slow_fly_started = false

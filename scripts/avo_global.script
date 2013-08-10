@@ -56,8 +56,8 @@ function _init()
 	_G["get_netpk"] = avo_netpk.get
 	
 	avo_storage._init()	-- initialize storage (db.avo) manager 
-	_G["set_var"] = avo_storage.set
-	_G["get_var"] = avo_storage.get
+	_G["save_astor"] = avo_storage.set
+	_G["load_astor"] = avo_storage.get
 	
 	--/ initialize timers here
 	
@@ -65,6 +65,8 @@ function _init()
 	
 	avo_game_utils._init()	-- initialize game utilities
 	_G["agu"] = avo_game_utils -- alias
+	_G["save_pstor"] = xr_logic.pstor_store
+	_G["load_pstor"] = xr_logic.pstor_retrieve
 	
 	avo_controller._init() --/ initialize controller as last step
 	

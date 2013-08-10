@@ -30,6 +30,8 @@ function _init()
 		avo_debug._init() -- initialize debug module
 	end
 	
+	atmosfear._init() -- initialize atmosfear
+	
 	init_modules() -- initialize modules
 	
 	sm:call("avo_game_started") -- let modules know everything is loaded
