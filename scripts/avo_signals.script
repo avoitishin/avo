@@ -191,13 +191,13 @@ class "slot"
 --/----------------------------------------------------------------------------
 --/ initialize slot
 --/----------------------------------------------------------------------------
-function slot:__init(signal, fun)
-	self.signal     = signal	--/ what signal are we expecting
+function slot:__init(signal, fun, int)
+	self.signal     = signal	-- what signal are we expecting
 	self.self       = nil			
-	self.fun        = fun			--/ what to do when signal received
-	self.last_call  = time_global()	--/ time of last call for timed slots
-	self.interval   = 0				--/ time interval for timed slots
-	sm:subscribe(self) --/ auto-subscribe
+	self.fun        = fun			-- what to do when signal received
+	self.last_call  = time_global()	-- time of last call for timed slots
+	self.interval   = int or 0				-- time interval for timed slots (in ms)
+	sm:subscribe(self) -- auto-subscribe
 end
 
 --[[-- HOWTO ------------------------------------------------------------------
