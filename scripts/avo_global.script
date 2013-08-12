@@ -10,6 +10,7 @@
 --/----------------------------------------------------------------------------
 local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
+local console = get_console() -- cache console
 local mod_version = 0.2
 
 --/----------------------------------------------------------------------------
@@ -18,6 +19,7 @@ local mod_version = 0.2
 --/----------------------------------------------------------------------------
 function _init()
 	avo_profiler.profile_before("avo_global")
+	
 	local ini = ini_file(cfg_file)
 	
 	-- lua debug
@@ -28,7 +30,7 @@ function _init()
 	_G["ASSERT"] = this.ASSERT -- game specific assert
 	_G["fn_empty"] = this.fn_empty -- empty function
 	
-	-- profiler
+	-- avo profiler
 	if read_ini(ini,"profiler","enabled","bool",false) then
 		_G["profile_before"] 	= avo_profiler.profile_before
 		_G["profile_after"] 	= avo_profiler.profile_after
@@ -45,7 +47,7 @@ function _init()
 	avo_lua._init() --/ initialize lua extensions
 	
 	_G["read_ini"] = this.read_ini	-- read value from config file
-	_G["read_ini_section"] = this.read_ini_section	-- read section from config file
+	_G["read_ini_sect"] = this.read_ini_sect	-- read section from config file. returns table
 	
 	local dlog_on = read_ini(ini,"logging","debug","bool",false)
 	local elog_on = read_ini(ini,"logging","error","bool",false)
@@ -73,17 +75,23 @@ function _init()
 	--/ initialize timers here
 	
 	-- this.init_callbacks() -- initialize custom (xray extensions) callbacks
+	slot("actor_net_destroy", this.on_actor_net_destroy) -- subscribe for profiler
 	
 	avo_game_utils._init()	-- initialize game utilities
 	_G["agu"] = avo_game_utils -- alias
 	_G["save_pstor"] = xr_logic.pstor_store
 	_G["load_pstor"] = xr_logic.pstor_retrieve
 	
+	this.load_deault_settings() -- load game settings
+	
 	avo_controller._init() --/ initialize controller as last step
 
 	avo_profiler.profile_after("avo_global")
 end
 
+function on_actor_net_destroy()
+	if profiler_on then profiler.stats() end -- log profiler statistics
+end
 --/----------------------------------------------------------------------------
 --/ initialize callbacks
 --/----------------------------------------------------------------------------
@@ -106,6 +114,20 @@ end
 	-- dlog("key pressed: %s", key)
 	-- sm:call("actor_key_press", key)
 -- end
+
+--/----------------------------------------------------------------------------
+--/ load default game settings
+--/----------------------------------------------------------------------------
+function load_deault_settings()
+	-- difficulty
+	console:execute("ai_aim_max_angle 25.0")
+	console:execute("ai_aim_min_angle 20.0")
+	console:execute("ai_aim_min_speed 2.50")
+	console:execute("ai_aim_predict_time 0.28")
+	console:execute("hud_info off")
+	console:execute("hud_crosshair_dist off")
+	console:execute("hud_crosshair off")
+end
 
 --/----------------------------------------------------------------------------
 --/ initialize signals manager
@@ -137,14 +159,14 @@ function abort(msg,...)
 		if log1 then
 			log1("[ABORT] "..string.format(msg, ...))
 		else
-			get_console():execute("load ~:[ABORT] "..string.format(msg, ...))
+			console:execute("load ~:[ABORT] "..string.format(msg, ...))
 		end
 	end
 	local function flush()
 		if flush1 then
 			flush1()
 		else
-			get_console():execute('flush')
+			console:execute('flush')
 		end
 	end
 	local function callstack()
@@ -205,7 +227,7 @@ function read_ini(ini,section,line,var_type,default)
 	end
 end
 --/ read section from config file
-function read_ini_section(ini,section)
+function read_ini_sect(ini,section)
 	local tmp = nil
 	local trim = string.trim
 	if ini and ini:section_exist(section) then
