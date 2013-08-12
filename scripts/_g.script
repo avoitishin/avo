@@ -2,6 +2,13 @@ if (jit == nil) then
 	profiler.setup_hook	()
 end
 
+-- avo: for global profiling
+-- require('RvP')
+-- jit = nil
+-- profiler.setup_hook()
+-- profiler_on = true
+--
+
 
 function empty	(container)
 	if (type(container) == "function") then
@@ -24,8 +31,8 @@ end
 schemes = {} -- соответствие схем модулям
 stypes = {} -- типv схем
 
--- іагружает схему из файла на диске и активирует в мотиваторе.
--- ідесь:
+-- загружает схему из файла на диске и активирует в мотиваторе.
+-- здесь:
 -- 	filename - имя файла, в котором реализована схема, без расширения
 -- 	scheme - имя схем
 function load_scheme(filename, scheme, stype)
