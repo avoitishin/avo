@@ -10,6 +10,7 @@ local time_before = nil
 local time_after = nil
 local mem_before = nil
 local mem_after = nil
+local timer = profile_timer() -- cache function
 
 local function form_msg(name,obj, proc_time, proc_mem)
 	local time = os.date("*t")
@@ -26,19 +27,21 @@ local function form_msg(name,obj, proc_time, proc_mem)
 end
 
 function profile_before(name,obj)
-	time_before = os.clock()
+	-- time_before = os.clock()
+	timer:start()
 	collectgarbage()
 	collectgarbage()
 	mem_before = collectgarbage('count') -- in Kb
 end
 
 function profile_after(name,obj)
-	time_after = os.clock()
+	-- time_after = os.clock()
+	timer:stop()
 	collectgarbage()
 	collectgarbage()
 	mem_after = collectgarbage('count') -- in Kb
 	
-	local proc_time = time_after - time_before
+	local proc_time = timer:time()/1000000 -- sec --time_after - time_before
 	local proc_mem = mem_after - mem_before
 	
 	avo_log.log(form_msg(name,obj,proc_time,proc_mem))
