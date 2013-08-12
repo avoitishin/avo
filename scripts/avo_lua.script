@@ -13,8 +13,25 @@ local self_name = script_name()
 --/ initialization. extend lua types with cutom functions
 --/----------------------------------------------------------------------------
 function _init()
+	--[[ *** Defined in rvp.dll lua extensions ***
+			string.trim	-- trim on both sides
+			string.trim_l	-- trim left
+			string.trim_r	-- trim right
+			string.trim_w	-- trim word?
+			string.pack
+			string.unpack
+			
+			table.size	--  returns dictionary size
+			table.keys	-- returns list of table keys
+			table.values	-- returns list of table values
+			table.random -- returns random key from table
+			
+			math.random
+			math.randomseed
+	]]
+	
 	--/ string
-	ext_namespace("string","trim",this.trim) --  trim spaces
+	-- ext_namespace("string","trim",this.trim) --  trim spaces
 	ext_namespace("string","split",this.split)	-- split into table by delim
 	ext_namespace("string","form",this.form) -- custom version of string.format
 	ext_namespace("string","get_filename",this.get_filename) -- get filename from path
@@ -22,7 +39,7 @@ function _init()
 	--/ table
 	ext_namespace("table","find",this.find)	-- check if value exists in table
 	ext_namespace("table","clone",this.clone)	-- clone table
-	ext_namespace("table","size",this.size) -- get size of hash table
+	-- ext_namespace("table","size",this.size) -- get size of hash table
 	ext_namespace("table","compress",this.compress) -- compress table into string
 	ext_namespace("table","uncompress",this.uncompress) -- uncompress table from string
 	ext_namespace("table","serialize",this.serialize) -- serialize table into string
