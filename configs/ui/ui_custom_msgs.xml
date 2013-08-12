@@ -287,4 +287,84 @@
 		<texture>intro\intro_back</texture>
 	</blackscreen>
 
+<!-- AtmosFear 4:3 ratio -->
+	<atm_indik_rad_green x="30" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_green</texture>
+	</atm_indik_rad_green>
+	<atm_indik_rad_yellow x="30" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_yellow</texture>
+	</atm_indik_rad_yellow>
+	<atm_indik_rad_orange x="30" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_orange</texture>
+	</atm_indik_rad_orange>
+	<atm_indik_rad_red x="30" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_red</texture>
+	</atm_indik_rad_red>
+	
+	<atm_indik_acid_green x="165" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_green</texture>
+	</atm_indik_acid_green>
+	<atm_indik_acid_yellow x="165" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_yellow</texture>
+	</atm_indik_acid_yellow>
+	<atm_indik_acid_orange x="165" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_orange</texture>
+	</atm_indik_acid_orange>
+	<atm_indik_acid_red x="165" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_red</texture>
+	</atm_indik_acid_red>
+
+	<atm_indik_psi_green x="120" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_green</texture>
+	</atm_indik_psi_green>
+	<atm_indik_psi_yellow x="120" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_yellow</texture>
+	</atm_indik_psi_yellow>
+	<atm_indik_psi_orange x="120" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_orange</texture>
+	</atm_indik_psi_orange>
+	<atm_indik_psi_red x="120" y="230" width="37" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_red</texture>
+	</atm_indik_psi_red>
+
+<!-- AtmosFear 16:10 ratio -->
+	<atm_indik_rad_green_16 x="24" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_green</texture>
+	</atm_indik_rad_green_16>
+	<atm_indik_rad_yellow_16 x="24" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_yellow</texture>
+	</atm_indik_rad_yellow_16>
+	<atm_indik_rad_orange_16 x="24" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_orange</texture>
+	</atm_indik_rad_orange_16>
+	<atm_indik_rad_red_16 x="24" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Radiation_red</texture>
+	</atm_indik_rad_red_16>
+	
+	<atm_indik_acid_green_16 x="132" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_green</texture>
+	</atm_indik_acid_green_16>
+	<atm_indik_acid_yellow_16 x="132" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_yellow</texture>
+	</atm_indik_acid_yellow_16>
+	<atm_indik_acid_orange_16 x="132" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_orange</texture>
+	</atm_indik_acid_orange_16>
+	<atm_indik_acid_red_16 x="132" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Biological_red</texture>
+	</atm_indik_acid_red_16>
+
+	<atm_indik_psi_green_16 x="96" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_green</texture>
+	</atm_indik_psi_green_16>
+	<atm_indik_psi_yellow_16 x="96" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_yellow</texture>
+	</atm_indik_psi_yellow_16>
+	<atm_indik_psi_orange_16 x="96" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_orange</texture>
+	</atm_indik_psi_orange_16>
+	<atm_indik_psi_red_16 x="96" y="230" width="29" height="33" stretch="1">
+		<texture>ui_inGame2_triangle_Psy_red</texture>
+	</atm_indik_psi_red_16>
+
 </header>
