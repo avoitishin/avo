@@ -3,7 +3,7 @@ if (jit == nil) then
 end
 
 -- avo: for global profiling
--- require('RvP')
+-- require('lua_debug')
 -- jit = nil
 -- profiler.setup_hook()
 -- profiler_on = true

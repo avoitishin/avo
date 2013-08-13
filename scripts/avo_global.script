@@ -12,7 +12,6 @@ local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
 local console = get_console() -- cache console
 local mod_version = 0.2
-
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/ Note: some global constants and flags are registered in avo_netpk
@@ -24,7 +23,7 @@ function _init()
 	
 	-- lua debug
 	local lua_debug_on = read_ini(ini,"debug","lua_debug","bool",false)
-	if lua_debug_on then require('RvP') end -- turn on lua debug (requires bin\RvP.dll)
+	if lua_debug_on then require('lua_debug') end -- turn on lua debug by RvP (requires bin\lua_debug.dll)
 
 	_G["abort"] = this.abort	-- crash game
 	_G["ASSERT"] = this.ASSERT -- game specific assert
@@ -44,7 +43,8 @@ function _init()
 	
 	_G["ext_namespace"] = this.ext_namespace -- protection against overriding lua functions
 	
-	avo_lua._init() --/ initialize lua extensions
+	require('lua_extensions') -- turn on RvP lua extensions (requires bin\lua_extensions.dll)
+	avo_lua._init() --/ initialize avo lua extensions
 	
 	_G["read_ini"] = this.read_ini	-- read value from config file
 	_G["read_ini_sect"] = this.read_ini_sect	-- read section from config file. returns table
