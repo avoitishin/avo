@@ -1,3 +1,4 @@
+#!/bin/lua
 --[[-- INFO -------------------------------------------------------------------
 	File				: avo_debug_m
 	Description : Debug functions and callbacks for most game events
