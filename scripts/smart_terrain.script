@@ -147,7 +147,7 @@ function se_smart_terrain:on_register()
 
 	printf("register smart %s", self:name())
 
-	if dev_dedug then
+	if _G.dev_debug then
 		self:refresh()
 	end
 
@@ -1002,7 +1002,7 @@ end
 -- Также может вызваться принудительно из xr_effects
 function se_smart_terrain:update()
 	cse_alife_smart_zone.update( self )
-	if dev_debug then
+	if _G.dev_debug then
 		self:refresh() -- Не забыть потом заремить
 	end
 
