@@ -13,18 +13,18 @@ local self_name = script_name()
 --/ initialization. extend lua types with cutom functions
 --/----------------------------------------------------------------------------
 function _init()
-	--[[ *** Defined in rvp.dll lua extensions ***
-			string.trim	-- trim on both sides
+	--[[ *** Defined as C functions in lua_extensions.dll ***
+			string.trim		-- trim on both sides
 			string.trim_l	-- trim left
 			string.trim_r	-- trim right
 			string.trim_w	-- trim word?
-			string.pack
-			string.unpack
+			string.pack 	-- pack to binary
+			string.unpack -- unpack from binary
 			
-			table.size	--  returns dictionary size
-			table.keys	-- returns list of table keys
+			table.size		--  returns dictionary size
+			table.keys		-- returns list of table keys
 			table.values	-- returns list of table values
-			table.random -- returns random key from table
+			table.random 	-- returns random key from table
 			
 			math.random
 			math.randomseed

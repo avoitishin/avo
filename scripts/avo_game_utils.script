@@ -9,7 +9,13 @@
 --/ Variables
 --/----------------------------------------------------------------------------
 local self_name = script_name()
-local sim = alife()
+-- game tables
+local tables_ini = "avo\\avo_tables.ltx"
+local squad_community_by_behaviour = {}
+local monster_classes = {}
+local stalker_classes = {}
+local weapon_classes = {}
+local artefact_classes = {}
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/----------------------------------------------------------------------------
@@ -18,6 +24,8 @@ function _init()
 	db.avo.online = {} -- database of online objects
 	db.avo.online.stalkers = {} -- database of online stalkers
 	db.avo.online.monsters = {} -- database of online monsters
+	
+	build_tables()
 end
 
 function init_slots()
@@ -84,6 +92,7 @@ end
 
 --/ Switch online or offline
 function switch_online(id)
+	local sim = alife()
 	if id < 1 or id > 65535 then return end
 	if sim then
 		sim:set_switch_online(id,true)
@@ -91,6 +100,7 @@ function switch_online(id)
 	end
 end
 function switch_offline(id)
+	local sim = alife()
 	if id < 1 or id > 65535 then return end
 	if sim then
 		sim:set_switch_online(id,false)
@@ -128,3 +138,60 @@ function item_is_fa(o,c)
 	end
 	return false
 end
+
+
+--/----------------------------------------------------------------------------
+--/ game tables and is_<type> functions
+--/----------------------------------------------------------------------------
+local function read_ini_sect_clsid(ini,section) -- helper to read clsid(s) from ini file section
+	local tmp = nil
+	local trim = string.trim
+	if ini and ini:section_exist(section) then
+		tmp = {}
+		local result, id, value = nil, nil, nil
+		for a = 0, ini:line_count(section) - 1 do
+			result, id, value = ini:r_line(section,a,'','')
+			if id ~= nil and trim(id) ~= '' then
+				local class_id = clsid[id]
+				if class_id then 
+					tmp[class_id] = value
+				end
+			end
+		end
+	end
+	return tmp
+end
+
+local function get_clsid(obj)
+	if obj == nil then return nil end
+	return obj:clsid()
+end
+
+function build_tables()
+	local ini = ini_file(tables_ini)
+	monster_classes = read_ini_sect_clsid(ini, 'monster_classes')
+	stalker_classes = read_ini_sect_clsid(ini, 'stalker_classes')
+	weapon_classes = read_ini_sect_clsid(ini, 'weapon_classes')
+	artefact_classes = read_ini_sect_clsid(ini, 'artefact_classes')
+end
+
+function is_monster(obj)
+	local id = get_clsid(obj)
+	return monster_classes[id] ~= nil
+end
+
+function is_stalker(obj)
+	local id = get_clsid(obj)
+	return stalker_classes[id] ~= nil
+end
+
+function is_weapon(obj)
+	local id = get_clsid(obj)
+	return weapon_classes[id] ~= nil
+end
+
+function is_artefact(obj)
+	local id = get_clsid(obj)
+	return artefact_classes[id] ~= nil
+end
+
