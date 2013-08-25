@@ -1,3 +1,10 @@
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+local character_community = agu.character_community
+----| end:aVo |----------------------------------------------------------------
+
 -- run_string log("----->"..tostring(xr_statistic.actor_statistic.best_monster).." "..tostring(xr_statistic.actor_statistic.best_monster_rank))
 actor_statistic = {
 					surges = 0,

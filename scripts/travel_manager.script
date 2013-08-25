@@ -1,3 +1,11 @@
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+local isWeapon = agu.is_weapon
+local alife_character_community = agu.alife_character_community
+----| end:aVo |----------------------------------------------------------------
+
 
 local travel_class = nil
 

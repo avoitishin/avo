@@ -1,3 +1,13 @@
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+local isWeapon = agu.is_weapon
+local isArtefact = agu.is_artefact
+local character_community = agu.character_community
+----| end:aVo |----------------------------------------------------------------
+
+
 --------------------------------------------------------------------------------
 -- Dialog manager --------------------------------------------------------------
 -- Made by Peacemaker ----------------------------------------------------------

@@ -1,9 +1,18 @@
-function init    (obj)
-				xr_motivator.AddToMotivator(obj)
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+local isWeapon = agu.is_weapon
+local isArtefact = agu.is_artefact
+local character_community = agu.character_community
+----| end:aVo |----------------------------------------------------------------
+
+function init(obj)
+	xr_motivator.AddToMotivator(obj)
 end
 
-function actor_init    (npc)
-				npc:bind_object(actor_binder(npc))
+function actor_init(npc)
+	npc:bind_object(actor_binder(npc))
 end
 
 local game_difficulty_by_num = {

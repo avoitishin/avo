@@ -1,3 +1,10 @@
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+----| end:aVo |----------------------------------------------------------------
+
+
 local DEATH_IDLE_TIME = 10*60 -- секунд
 local RESPAWN_IDLE = 1000   -- секунд игрового времени
 local RESPAWN_RADIUS = 150 -- радиус респауна(если актер ближе, то не спаунить)
@@ -910,21 +917,21 @@ end
 --' Возвращает отформатированную строку свойств смарта
 function se_smart_terrain:get_smart_props()
 	local props = smart_names.get_smart_terrain_name(self)
-	if(props==nil) or (_G.dev_debug) then
+	if not props or _G.dev_debug then
 		props = self:name().."  ["..self.id.."]\\n"..
-					self.sim_type.."\\n"..
+					"type = "..self.sim_type.."\\n"..
 					"squad_id = "..tostring(self.id).."\\n"..
 					"capacity = "..tostring(self.max_population).." ("..sim_board.get_sim_board():get_smart_population(self)..")\\n"
 
-			if self.respawn_point ~= nil and self.already_spawned ~= nil then
-					props = props.."\\nalready_spawned :\n"
-					for k,v in pairs(self.already_spawned) do
-						props = props.."["..k.."] = "..v.num.."("..xr_logic.pick_section_from_condlist(db.actor, nil,self.respawn_params[k].num)..")\\n"
-					end
-					if self.last_respawn_update then
-						props = props.."\\ntime_to_spawn:"..tostring(RESPAWN_IDLE - game.get_game_time():diffSec(self.last_respawn_update)).."\\n"
-					end
+		if self.respawn_point ~= nil and self.already_spawned ~= nil then
+			props = props.."\\nalready_spawned :\n"
+			for k,v in pairs(self.already_spawned) do
+				props = props.."["..k.."] = "..v.num.."("..xr_logic.pick_section_from_condlist(db.actor, nil,self.respawn_params[k].num)..")\\n"
 			end
+			if self.last_respawn_update then
+				props = props.."\\ntime_to_spawn:"..tostring(RESPAWN_IDLE - game.get_game_time():diffSec(self.last_respawn_update)).."\\n"
+			end
+		end
 
 			--' Добавляем информацию о находящихся в смарте отрядах
 			for k,v in pairs(sim_board.get_sim_board().smarts[self.id].squads) do

@@ -11,7 +11,7 @@
 local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
 local console = get_console() -- cache console
-local mod_version = 0.2
+local mod_version = nil
 --/----------------------------------------------------------------------------
 --/ Initialization
 --/ Note: some global constants and flags are registered in avo_netpk
@@ -20,6 +20,8 @@ function _init()
 	avo_profiler.profile_before("avo_global")
 	
 	local ini = ini_file(cfg_file)
+	
+	mod_version = read_ini(ini,"mod","version","string",'')
 	
 	-- lua debug
 	local lua_debug_on = read_ini(ini,"debug","lua_debug","bool",false)
@@ -201,7 +203,8 @@ function collect_garbage()
 end
 --/ return mod version
 function get_mod_version()
-	return mod_version
+	local ini = ini_file(cfg_file)
+	return mod_version or this.read_ini(ini,"mod","version","string",'')
 end
 
 --/----------------------------------------------------------------------------

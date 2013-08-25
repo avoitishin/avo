@@ -2,11 +2,11 @@
 	File				: avo_utils
 	Description	: Various game utilities
 	Credits			: aVo, Alundaio
-	Revision		: 0.1
-	Change Date	: 07.25.2013
+	Revision		: 0.3
+	Change Date	: 08.24.2013
 --]] --------------------------------------------------------------------------
 --/----------------------------------------------------------------------------
---/ Variables
+--/ variables
 --/----------------------------------------------------------------------------
 local self_name = script_name()
 -- game tables
@@ -17,7 +17,7 @@ local stalker_classes = {}
 local weapon_classes = {}
 local artefact_classes = {}
 --/----------------------------------------------------------------------------
---/ Initialization
+--/ initialization
 --/----------------------------------------------------------------------------
 function _init()
 	init_slots() -- subscribe to game events
@@ -33,6 +33,9 @@ function init_slots()
 	slot("stalker_net_destroy", this.on_stalker_net_destroy)
 end
 
+--/----------------------------------------------------------------------------
+--/ callbacks
+--/----------------------------------------------------------------------------
 function on_stalker_net_spawn(motivator_binder, se_object)
 	local npc = motivator_binder.object
 	table.insert(db.avo.online.stalkers, npc:id()) -- add to db of online stalkers
@@ -49,7 +52,7 @@ function on_stalker_net_destroy(motivator_binder)
 end
 
 --/----------------------------------------------------------------------------
---/ GAME UTILS
+--/ Positional functions
 --/----------------------------------------------------------------------------
 --/ find stalker and distance closest to npc. Can pass npc, or "cam" for actor
 function get_nearest_stalker(npc, max_dist)
@@ -76,21 +79,28 @@ function get_nearest_stalker(npc, max_dist)
 	end
 	return nearest_stalker, nearest_dist
 end
---/ get npc actor is aiming at. 
-function get_target_npc()
+
+--/----------------------------------------------------------------------------
+--/ Inventory functions
+--/----------------------------------------------------------------------------
+
+--/----------------------------------------------------------------------------
+--/ Object Control functions
+--/----------------------------------------------------------------------------
+
+function get_target_npc() -- get npc actor is aiming at
 	local obj = get_target_object()
-	if obj and IsStalker(obj) then -- TODO: stop using _g.IsStalker
+	if obj and is_stalker(obj) then
 		return obj
 	end
 end
---/ get object actor is aiming at (uses xray extensions for level.get_target_obj)
-function get_target_object()
+
+function get_target_object() -- get object actor is aiming at
 	if level.get_target_obj then
-		return level.get_target_obj()
+		return level.get_target_obj() -- xray extensions
 	end
 end
 
---/ Switch online or offline
 function switch_online(id)
 	local sim = alife()
 	if id < 1 or id > 65535 then return end
@@ -99,6 +109,7 @@ function switch_online(id)
 		sim:set_switch_offline(id,false)
 	end
 end
+
 function switch_offline(id)
 	local sim = alife()
 	if id < 1 or id > 65535 then return end
@@ -109,7 +120,68 @@ function switch_offline(id)
 end
 
 --/----------------------------------------------------------------------------
---/ Check if object is a weapon. TODO: refactor and build tables of weapons, items, etc
+--/ Indentity functions
+--/ TODO: remove ASSERT when confirm correct call sequence
+--/----------------------------------------------------------------------------
+local function read_ini_sect_clsid(ini,section) -- helper to read clsid(s) from ini file section
+	local tmp = nil
+	local trim = string.trim
+	if ini and ini:section_exist(section) then
+		tmp = {}
+		local result, id, value = nil, nil, nil
+		for a = 0, ini:line_count(section) - 1 do
+			result, id, value = ini:r_line(section,a,'','')
+			if id ~= nil and trim(id) ~= '' then
+				local class_id = clsid[id]
+				if class_id then 
+					tmp[class_id] = value
+				end
+			end
+		end
+	end
+	return tmp
+end
+
+local function get_clsid(obj)
+	if obj == nil then return nil end
+	return obj:clsid()
+end
+
+function build_tables() -- prepare game tables
+	local ini = ini_file(tables_ini)
+	monster_classes = read_ini_sect_clsid(ini, 'monster_classes')
+	stalker_classes = read_ini_sect_clsid(ini, 'stalker_classes')
+	weapon_classes = read_ini_sect_clsid(ini, 'weapon_classes')
+	artefact_classes = read_ini_sect_clsid(ini, 'artefact_classes')
+end
+
+function is_monster(obj)
+	ASSERT(table.size(monster_classes) > 0, "monster_classes table has not be initialized yet. Too early to call is_monster(...)")
+	local id = get_clsid(obj)
+	return monster_classes[id] ~= nil
+end
+
+function is_stalker(obj)
+	ASSERT(table.size(stalker_classes) > 0, "stalker_classes table has not be initialized yet. Too early to call is_stalker(...)")
+	local id = get_clsid(obj)
+	return stalker_classes[id] ~= nil
+end
+
+function is_weapon(obj)
+	ASSERT(table.size(weapon_classes) > 0, "weapon_classes table has not be initialized yet. Too early to call is_weapon(...)")
+	local id = get_clsid(obj)
+	return weapon_classes[id] ~= nil
+end
+
+function is_artefact(obj)
+	ASSERT(table.size(weapon_classes) > 0, "artefact_classes table has not be initialized yet. Too early to call is_artefact(...)")
+	local id = get_clsid(obj)
+	return artefact_classes[id] ~= nil
+end
+
+--/----------------------------------------------------------------------------
+--/ Check if object is a weapon. 
+--/ TODO: refactor and build tables of weapons, items, etc
 --/----------------------------------------------------------------------------
 function item_is_fa(o,c)
 	if not c then
@@ -139,59 +211,25 @@ function item_is_fa(o,c)
 	return false
 end
 
-
---/----------------------------------------------------------------------------
---/ game tables and is_<type> functions
---/----------------------------------------------------------------------------
-local function read_ini_sect_clsid(ini,section) -- helper to read clsid(s) from ini file section
-	local tmp = nil
-	local trim = string.trim
-	if ini and ini:section_exist(section) then
-		tmp = {}
-		local result, id, value = nil, nil, nil
-		for a = 0, ini:line_count(section) - 1 do
-			result, id, value = ini:r_line(section,a,'','')
-			if id ~= nil and trim(id) ~= '' then
-				local class_id = clsid[id]
-				if class_id then 
-					tmp[class_id] = value
-				end
-			end
-		end
+function get_object_community(obj)
+	if type(obj.id) == "function" then
+		return character_community(obj)
+	else
+		return alife_character_community(obj)
 	end
-	return tmp
 end
 
-local function get_clsid(obj)
-	if obj == nil then return nil end
-	return obj:clsid()
+function character_community(obj)
+	if is_stalker(obj) then
+		return obj:character_community()
+	end
+	return "monster"
 end
 
-function build_tables()
-	local ini = ini_file(tables_ini)
-	monster_classes = read_ini_sect_clsid(ini, 'monster_classes')
-	stalker_classes = read_ini_sect_clsid(ini, 'stalker_classes')
-	weapon_classes = read_ini_sect_clsid(ini, 'weapon_classes')
-	artefact_classes = read_ini_sect_clsid(ini, 'artefact_classes')
-end
-
-function is_monster(obj)
-	local id = get_clsid(obj)
-	return monster_classes[id] ~= nil
-end
-
-function is_stalker(obj)
-	local id = get_clsid(obj)
-	return stalker_classes[id] ~= nil
-end
-
-function is_weapon(obj)
-	local id = get_clsid(obj)
-	return weapon_classes[id] ~= nil
-end
-
-function is_artefact(obj)
-	local id = get_clsid(obj)
-	return artefact_classes[id] ~= nil
+function alife_character_community(obj)
+	if is_stalker(obj) then
+		return obj:community()
+	end
+	return "monster"
 end
 

@@ -1,3 +1,11 @@
+----| aVo |--------------------------------------------------------------------
+local agu = avo_game_utils
+local IsMonster = agu.is_monster
+local IsStalker = agu.is_stalker
+local isWeapon = agu.is_weapon
+local character_community = agu.character_community
+----| end:aVo |----------------------------------------------------------------
+
 ----------------------------------------------------------------------------------------------------------------------
 --'	Схема помощи раненым
 --'	автор: Диденко Руслан (Stohe)

@@ -410,6 +410,7 @@ function store_table(table, subs)
 end
 
 -------------------------------------------------------------------------------------------
+--[[ -- avo: moved to avo_game_utils
 local monster_classes = {}
 local stalker_classes = {}
 local weapon_classes = {}
@@ -452,11 +453,12 @@ function character_community (obj)
 end
 
 function alife_character_community (obj)
-	if IsStalker(obj, obj:clsid()) then
+	if IsStalker(obj) then
 		return obj:community()
 	end
 	return "monster"
 end
+]]
 
 -- получить геймобжект по стори_айди.
 function level_object_by_sid( sid )
@@ -520,7 +522,7 @@ end
 
 function start_game_callback()
 	aa = alife()
-
+	--[[ avo: moved to avo_game_utils
 	squad_community_by_behaviour = {
 		["stalker"]							= "stalker",
 		["bandit"]							= "bandit",
@@ -605,7 +607,8 @@ function start_game_callback()
 		[clsid.art_zuda] 				= true,
 		[clsid.artefact] 				= true,
 		[clsid.artefact_s] 				= true}
-
+	]]
+	
 	printf	("start_game_callback called")
 	smart_names.init_smart_names_table()
 	task_manager.clear_task_manager()
