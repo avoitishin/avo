@@ -81,7 +81,7 @@ function motivator_binder:net_spawn(sobject)
 		end
 	end
 
-	xrs_dyn_music.npc_table[self.object:id()] = self.object:id()
+	-- xrs_dyn_music.npc_table[self.object:id()] = self.object:id()
 	--memusage.collect_info(self.object, "netspawn_start")
 	if not object_binder.net_spawn(self, sobject) then
 		return false
@@ -194,7 +194,7 @@ function motivator_binder:net_destroy()
 	sm:call("stalker_net_destroy", self)
 
 	--printf("motivator_binder:net_destroy(): self.object:name()='%s'", self.object:name())
-	xrs_dyn_music.npc_table[self.object:id()] = nil
+	-- xrs_dyn_music.npc_table[self.object:id()] = nil
 
 	xr_combat_ignore.fighting_with_actor_npcs[self.object:id()] = nil
 --	xrs_dyn_music.stop_combat(self.object:id())
@@ -301,7 +301,7 @@ end
 function motivator_binder:death_callback(victim, who)
 	self:hit_callback(victim, 1, vector():set(0,0,0), who, "from_death_callback")
 
-	xrs_dyn_music.npc_table[self.object:id()] = nil
+	-- xrs_dyn_music.npc_table[self.object:id()] = nil
 	xr_combat_ignore.fighting_with_actor_npcs[self.object:id()] = nil
 --	xrs_dyn_music.stop_combat(self.object:id())
 	--' Если игрок был с квестом от механика - фейлить его

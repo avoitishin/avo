@@ -101,7 +101,8 @@ function WeatherManager:reset()
 		self.weather_list = xr_logic.parse_condlist(db.actor, level.name(), "weather", weather)
 	end
 	-- CC read DOF kernels and far_plane distances	
-	self.dof_kernels = xr_s.parse_ini_section_to_array(self.graphs_ini,"dof_kernels")
+	-- self.dof_kernels = xr_s.parse_ini_section_to_array(self.graphs_ini,"dof_kernels")
+	self.dof_kernels = read_ini_sect(self.graphs_ini,"dof_kernels")
 	for cycle,dof in pairs(self.dof_kernels) do
 		self.far_distances[cycle]={}
 		local phase
@@ -498,7 +499,8 @@ end
 -- ѕолучить граф (таблицу переходов состо€ний погоды) по его названию и названию игрового уровн€
 function WeatherManager:get_graph_by_name(name)
 	if not self.graphs[name] then
-		self.graphs[name] = xr_s.parse_ini_section_to_array(self.graphs_ini,name)
+		-- self.graphs[name] = xr_s.parse_ini_section_to_array(self.graphs_ini,name)
+		self.graphs[name] = read_ini_sect(self.graphs_ini,name)
 	end
 	return self.graphs[name]
 end

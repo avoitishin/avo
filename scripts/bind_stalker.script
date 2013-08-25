@@ -65,7 +65,7 @@ function actor_binder:net_spawn(data)
 	if self.st.disable_input_time == nil then
 		level.enable_input()
 	end
-	xr_s.on_game_load()                                    --' Distemper 03.2008 --
+	-- xr_s.on_game_load()                                    --' Distemper 03.2008 --
 	self.weather_manager:reset()
 	--' Загружаем настройки дропа
 	death_manager.init_drop_settings()
@@ -126,8 +126,8 @@ function actor_binder:net_destroy()
 		sr_psy_antenna.psy_antenna:destroy()
 		sr_psy_antenna.psy_antenna = false
 	end
-	xrs_dyn_music.finish_theme()
-	xr_s.on_actor_destroy()
+	-- xrs_dyn_music.finish_theme()
+	-- xr_s.on_actor_destroy()
 	object_binder.net_destroy(self)
 end
 ----------------------------------------------------------------------------------------------------------------------
@@ -409,7 +409,7 @@ function actor_binder:update(delta)
 		self.loaded_slot_applied = true
 	end
 	
-	xr_s.on_actor_update(delta)
+	-- xr_s.on_actor_update(delta)
 
 	if(self.surge_manager) then
 		if(self.f_surge_manager_loaded ~= true) then

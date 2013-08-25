@@ -98,7 +98,8 @@ end
 
 function af_options_dialog:OptionsFromIni(combo, section)
 	combo:ClearList()
-	local options = xr_s.parse_ini_section_to_array(self.param_ini,section)
+	-- local options = xr_s.parse_ini_section_to_array(self.param_ini,section)
+	local options = read_ini_sect(self.param_ini,section)
 	local inv_options = {}
 	if options~=nil then
 		for option, value in pairs(options) do
@@ -206,7 +207,8 @@ end
 
 function af_options_dialog:GetComboValue(option_name)
 	local selected = self["list_"..option_name]:GetText()
-	local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_option_names")
+	-- local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_option_names")
+	local parameters = read_ini_sect(self.param_ini,"atmosfear_option_names")
 	for option, name in pairs(parameters) do
 		if game.translate_string(name)==selected then
 			return option
@@ -285,7 +287,8 @@ function af_options_dialog:SetCurrentValues()
 end
 
 function af_options_dialog:SetDefaultValues()
-	local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_default_parameters")
+	-- local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_default_parameters")
+	local parameters = read_ini_sect(self.param_ini,"atmosfear_default_parameters")
 	for k,level_name in pairs(self.atmosfear.level_names) do
 		self:SetComboValue(level_name.."_period_good",			parameters["opt_"..level_name.."_period_good"])
 		self:SetComboValue(level_name.."_period_bad",			parameters["opt_"..level_name.."_period_bad"])
@@ -398,7 +401,8 @@ end
 
 function af_options_dialog:OnWeatherBalancePresets()
 	local selected = self:GetComboValue("weather_balance_presets")
-	local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_preset_"..selected)
+	-- local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_preset_"..selected)
+	local parameters = read_ini_sect(self.param_ini,"atmosfear_preset_"..selected)
 	if parameters~=nil then
 		for option, name in pairs(parameters) do
 			self:SetComboValue(option,name)
@@ -408,7 +412,8 @@ end
 
 function af_options_dialog:OnWeatherLengthPresets()
 	local selected = self:GetComboValue("weather_length_presets")
-	local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_preset_"..selected)
+	-- local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_preset_"..selected)
+	local parameters = read_ini_sect(self.param_ini,"atmosfear_preset_"..selected)
 	if parameters~=nil then
 		for option, name in pairs(parameters) do
 			self:SetRadioValue(option,name)
@@ -705,7 +710,8 @@ function CAtmosFearFake:__init() super()
 end
 
 function CAtmosFearFake:loadDefaultParameters()
-	local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_default_parameters")
+	-- local parameters = xr_s.parse_ini_section_to_array(self.param_ini,"atmosfear_default_parameters")
+	local parameters = read_ini_sect(self.param_ini,"atmosfear_default_parameters")
 	self.opt_weather_balance_presets	= parameters["opt_weather_balance_presets"]
 	self.opt_weather_length_presets		= parameters["opt_weather_length_presets"]
 
