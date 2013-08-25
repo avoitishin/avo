@@ -76,7 +76,7 @@
 		<text>Разрывает волной</text>
 	</string>
 	<string id="st_list_fate_poison">
-		<text>Радиоактивное\Химическое отравление</text>
+		<text>Рад или хим отравление</text>
 	</string>
 	<string id="st_list_fate_none">
 		<text>Не влияет</text>
