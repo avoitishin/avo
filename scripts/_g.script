@@ -47,7 +47,7 @@ mus_vol = 0
 amb_vol = 0
 b_discard_settings_shown = false
 ----------------------------------------------------------------------
-local scripts_to_print =	{
+--[[local scripts_to_print =	{
 							["stalker_generic"] = true,
 							["xr_smartcover"] = true,
 							["xr_logic"] = true,
@@ -86,9 +86,9 @@ local scripts_to_print =	{
 							["xr_danger"]	 = true,
 							["task_manager"] = true,
 							["task_objects"]	 = true
-							}
+							}]]
 function printf(fmt,...)
-
+--[[
 	local is_g = 0
 	local result = fmt
 	if debug == nil then
@@ -108,7 +108,7 @@ function printf(fmt,...)
 		result = fmt
 	end
 	log(string.format(result,...))
-
+]]
 end
 
 ----------------------------------------------------------------------
@@ -630,7 +630,7 @@ function start_game_callback()
 	----| end:aVo |----------------------------------------------------------------
 end
 
---' Lсталость
+--' Усталость
 function on_actor_critical_power()
 
 end
@@ -638,7 +638,7 @@ end
 function on_actor_critical_max_power()
 end
 
---' іровотечение
+--' Кровотечение
 function on_actor_bleeding()
 
 end
@@ -646,22 +646,22 @@ end
 function on_actor_satiety()
 end
 
---' іадиация
+--' Радиация
 function on_actor_radiation()
 
 end
 
---' іаклинило оружие
+--' Заклинило оружие
 function on_actor_weapon_jammed()
 
 end
 
---' не может ходить изза веса
+--' Не может ходить из за веса
 function on_actor_cant_walk_weight()
 
 end
 
---' пси воздействие
+--' Пси воздействие
 function on_actor_psy()
 end
 
