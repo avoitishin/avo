@@ -689,7 +689,7 @@ function on_actor_reinit()
 end
 
 function on_actor_update(delta)
-	-- dlog("actor_binder.update(delta) called")
+	-- dlog("actor_binder.update(%s) called", delta)
 	
 	--/ Update debug hud displays
 	if show_top_hud then
@@ -724,11 +724,11 @@ function on_actor_load(reader)
 end
 
 function on_actor_take_item_from_box(box, item)
-	dlog("actor_binder.take_item_from_box(box, item) called")
+	dlog("actor_binder.take_item_from_box(%s, %s) called", box:name(), item:section())
 end
 
 function on_actor_info_callback(npc, info_id)
-	dlog("actor_binder.info_callback(npc, info_id) called")
+	dlog("actor_binder.info_callback(%s, %s) called", npc:name(), info_id)
 end
 
 function on_actor_on_trade(item, sell_bye, money)
@@ -740,15 +740,15 @@ function on_actor_article_callback(npc, group, name)
 end
 
 function on_actor_on_item_take(obj)
-	dlog("actor_binder.on_item_take(obj) called")
+	dlog("actor_binder.on_item_take(%s) called", obj:section())
 end
 
 function on_actor_on_item_drop(obj)
-	dlog("actor_binder.on_item_drop(obj) called")
+	dlog("actor_binder.on_item_drop(%s) called", obj:section())
 end
 
 function on_actor_use_inventory_item(obj)
-	dlog("actor_binder.use_inventory_item(obj) called")
+	dlog("actor_binder.use_inventory_item(%s) called", obj:section())
 end
 
 function on_actor_anabiotic_callback()
@@ -760,7 +760,8 @@ function on_actor_anabiotic_callback2()
 end
 
 function on_actor_task_callback(_task, _state)
-	dlog("actor_binder.task_callback(_task, _state) called")
+	local task_title = game.translate_string(_task:get_id())
+	dlog("actor_binder.task_callback(%s, %s) called", task_title, _state)
 end
 
 function on_actor_hit_callback(obj, amount, local_direction, who, bone_index)
