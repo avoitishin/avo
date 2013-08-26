@@ -10,7 +10,6 @@
 --/----------------------------------------------------------------------------
 local cfg_file = "avo\\avo_global.ltx"
 local self_name = script_name()
-local console = get_console() -- cache console
 local mod_version = nil
 --/----------------------------------------------------------------------------
 --/ Initialization
@@ -129,6 +128,7 @@ end
 --/ load default game settings
 --/----------------------------------------------------------------------------
 function load_deault_settings()
+	local console = get_console()
 	-- difficulty
 	console:execute("ai_aim_max_angle 25.0")
 	console:execute("ai_aim_min_angle 20.0")
@@ -137,6 +137,10 @@ function load_deault_settings()
 	console:execute("hud_info off")
 	console:execute("hud_crosshair_dist off")
 	console:execute("hud_crosshair off")
+	-- misc
+	console:execute("snd_volume_music 0.0")
+	console:execute("cam_inert 0.0")
+	console:execute("cam_slide_inert 0.0")
 end
 
 --/----------------------------------------------------------------------------
