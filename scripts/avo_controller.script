@@ -29,6 +29,7 @@ function _init()
 	end
 	
 	atmosfear._init() -- initialize atmosfear
+	move_mgr._init() -- initialize move manager
 	
 	init_modules() -- initialize modules
 	

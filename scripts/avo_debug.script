@@ -805,11 +805,11 @@ end
 --/ xr_motivator callbacks
 --/----------------------------------------------------------------------------
 function on_stalker_net_spawn(motivator_binder, se_object)
-	dlog("motivator_binder.net_spawn(sobject) called")
+	dlog("motivator_binder.net_spawn(%s) called",se_object:name())
 end
 
 function on_stalker_net_destroy(motivator_binder)
-	dlog("motivator_binder.net_destroy() called")
+	dlog("motivator_binder.net_destroy(%s) called",motivator_binder.object:name())
 end
 
 

@@ -378,8 +378,6 @@ animations = {
 						out		= { [0]	= { "knopka_1" } },
 						idle	= { [0]	= "knopka_2" },
 						rnd		= nil },
-
-
 		warding		= {	prop	= { maxidle = 10,
 									sumidle = 10,
 									rnd = 0 },
@@ -387,7 +385,6 @@ animations = {
 						out		= {	[0]	= { "ohrana_2" }},
 						idle	= {	[0]	= "ohrana_1"},
 						rnd		= nil },
-
 		warding_short		= {	prop	= { maxidle = 10,
 									sumidle = 10,
 									rnd = 0 },
@@ -403,9 +400,6 @@ animations = {
 						out		= nil,
 						idle	= {	[0]	= "cut_scene_idle_0"},
 						rnd		= nil },
-
-
-
 		talk_default	= {	prop	= { maxidle = 5,
 									sumidle = 5,
 									rnd = 70 },
@@ -479,25 +473,6 @@ animations = {
 											 "trans_0_idle_4",
 											 "trans_0_idle_5",
 											 "trans_0_idle_6"} } },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		probe_stand		= {	prop	= { maxidle = 0,
 									sumidle = 0,
 									rnd = 100 },
@@ -610,7 +585,68 @@ animations = {
 									[8]	= {"raciya_8_talk_0"},
 									[9]	= {"raciya_9_talk_0"},
 									[10]= {"raciya_10_talk_0"} } },
+		sleep_sit	= {	prop	= { maxidle = 10,
+									sumidle = 20,
+									rnd = 100 },
+						into	= { [0]	= {"sit_2_to_sleep_2"}},
+						out		= { [0]	= {"sleep_2_to_sit_2"}},
+						idle	= { [0]	= "sleep_idle_2" },
+						rnd		= {	[0]	= {"sleep_idle_3" }}},
+		eat_bread	= {	prop	= { maxidle = 3,
+									sumidle = 3,
+									rnd = 80 },
+						into	= { [0]	= {"item_2_draw_0",  {a="bread"}, "item_2_draw_1"} },
+						out		= { [0]	= {"item_2_holster_0", {d="bread"}, "item_2_holster_1"} },
+						idle	= { [0]	= "item_2_aim_0" },
+						rnd		= { [0]	= {	"item_2_prepare_0",
+											"item_2_attack_0" } }},
+		eat_vodka	= {	prop	= { maxidle = 3,
+									sumidle = 3,
+									rnd = 80 },
+						into	= { [0]	= {"item_4_draw_0",  {a="vodka"}, "item_4_draw_1"} },
+						out		= { [0]	= {"item_4_holster_0", {d="vodka"}, "item_4_holster_1"} },
+						idle	= { [0]	= "item_4_aim_0" },
+						rnd		= { [0]	= {	"item_4_prepare_0",
+											"item_4_attack_0" } }},
+		eat_energy	= {	prop	= { maxidle = 3,
+									sumidle = 3,
+									rnd = 80 },
+						into	= { [0]	= {"item_5_draw_0",  {a="energy_drink"}, "item_5_draw_1"} },
+						out		= { [0]	= {"item_5_holster_0", {d="energy_drink"}, "item_5_holster_1"} },
+						idle	= { [0]	= "item_5_aim_0" },
+						rnd		= { [0]	= {	"item_5_prepare_0",
+											"item_5_attack_0" } }},
+		eat_kolbasa	= {	prop	= { maxidle = 3,
+									sumidle = 3,
+									rnd = 80 },
+						into	= { [0]	= {"item_1_draw_0", {a="kolbasa"}, "item_1_draw_1"}},
+						out		= { [0]	= {"item_1_holster_0", {d="kolbasa"}, "item_1_holster_1"} },
+						idle	= { [0]	= "item_1_idle_1" },
+						rnd		= { [0]	= {	"item_1_attack_0",
+											"item_1_idle_0" } }},
 
+		cr_medical_1		= {	prop	= { maxidle = 1,
+									sumidle = 1,
+									rnd = 100 },
+						into	= {	[0]	= {"cr_raciya_0_draw_0", {a="medkit_script"}, "dinamit_1",{f=xr_help_wounded.help_wounded}}},
+						out		= {	[0]	= {"cr_raciya_0_hide_0", {d="medkit_script"}, "cr_raciya_0_hide_1"}},
+						idle	=  nil,
+						rnd		=  nil},
+
+		cr_medical_2	= {	prop	= { maxidle = 1,
+									sumidle = 1,
+									rnd = 100 },
+						into	= {	[0]	= {"cr_raciya_0_draw_0", {a="medkit_script"}, "cr_raciya_0_draw_1",{f=xr_help_wounded.help_wounded}}},
+						out		= nil,
+						idle	= nil,
+						rnd		= nil},
+		pickup_crouch	= {	prop	= { maxidle = 1,
+									sumidle = 1,
+									rnd = 100 },
+						into	= {	[0]	= {"cr_raciya_0_hide_0", {f=xr_gather_items.gather_item}, "cr_raciya_0_hide_1"}},
+						out		= nil,
+						idle	= nil,
+						rnd		= nil},
 		cr_raciya		= {	prop	= { maxidle = 1,
 									sumidle = 1,
 									rnd = 100 },
@@ -695,6 +731,72 @@ animations = {
 						out		= nil,
 						rnd		= nil,
 						idle	= nil},
+
+		prone		= 	{	prop	= 	{ maxidle = 5,sumidle = 3,rnd = 80,moving = true },
+						into	= 	{
+										[0] = { "loophole_9_in_front_0" },
+										[1] = { "loophole_9_in_front_0" }
+									},
+						out		= nil,
+						idle	= 	{
+										[0]	= "loophole_9_idle_0",
+										[1]	= "loophole_9_idle_0"
+									},
+						rnd		= 	{
+										[0]	= {	"loophole_9_idle_0" },
+										[1]	= {	"loophole_9_idle_0" }
+									}
+					},
+		prone_idle		= 	{	prop	= 	{ maxidle = 5,sumidle = 3,rnd = 80,moving = true },
+						into	= nil,
+						out		= nil,
+						idle	= 	{
+										[0]	= "loophole_9_idle_0",
+										[1]	= "loophole_9_idle_0"
+									},
+						rnd		= 	{
+										[0]	= {	"loophole_9_idle_0" },
+										[1]	= {	"loophole_9_idle_0" }
+									}
+					},
+		barricade = {
+					prop = 	{ maxidle = 4, sumidle = 1, rnd = 100},
+					into = 	nil,
+					out  = 	nil,
+					idle = 	{
+								[0] = "barricade_0_idle_0",
+								[1] = "barricade_1_idle_0",
+								[2] = "barricade_2_idle_0",
+								[3] = "barricade_3_idle_0",
+								[4] = "barricade_commander_idle_0"
+							},
+					rnd  =	nil
+					},
+		barricade_look = {
+					prop = 	{ maxidle = 1, sumidle = 1, rnd = 100},
+					into =  {
+								[0] = {"barricade_0_look_in_0"},
+								[1] = {"barricade_1_look_in_0"},
+								[2] = {"barricade_2_look_in_0"},
+								[3] = {"barricade_3_look_in_0"},
+								[4] = {"barricade_commander_look_in_0"}
+							},
+					out  = 	{
+								[5] = {"barricade_0_look_out_0"},
+								[6] = {"barricade_1_look_out_0"},
+								[7] = {"barricade_2_look_out_0"},
+								[8] = {"barricade_3_look_out_0"},
+								[9] = {"barricade_commander_look_out_0"}
+							},
+					rnd  = 	nil,
+					idle = 	{
+								[0] = {"barricade_0_look_idle_0"},
+								[1] = {"barricade_1_look_idle_0"},
+								[2] = {"barricade_2_look_idle_0"},
+								[3] = {"barricade_3_look_idle_0"},
+								[4] = {"barricade_commander_look_idle_0"}
+							}
+					}
 	}
 
 utils.copy_table(animations, state_mgr_animation_list_animpoint.add_animation_list())

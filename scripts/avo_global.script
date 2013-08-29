@@ -242,7 +242,7 @@ function read_ini(ini,section,line,var_type,default)
 	end
 end
 --/ read section from config file
-function read_ini_sect(ini,section)
+function read_ini_sect(ini,section,keys_only)
 	local tmp = nil
 	local trim = string.trim
 	if ini and ini:section_exist(section) then
@@ -251,7 +251,11 @@ function read_ini_sect(ini,section)
 		for a = 0, ini:line_count(section) - 1 do
 			result, id, value = ini:r_line(section,a,'','')
 			if id ~= nil and trim(id) ~= '' then
-				tmp[trim(id)] = trim(value)
+				if keys_only then
+					table.insert(tmp,id)
+				else
+					tmp[trim(id)] = trim(value)
+				end
 			end
 		end
 	end
